@@ -20,7 +20,7 @@ Zero-cost, ad-free, no-account-required browsing and listening — powered entir
 
 ## Operating Context
 
-A responsive web app, desktop-first with mobile support. Navigation lives in a persistent left sidebar (Home, Search, Trending, Countries, Genres, Liked Stations). Playback happens via a persistent bottom player bar that can expand into a full "Now Playing" view. Logging in is only required to save/view favorite stations — browsing and listening never require it.
+A responsive web app, desktop-first with mobile support. Navigation lives in a persistent left sidebar (Home, Trending, Countries, Genres, Liked Stations); search lives in a persistent top bar. Playback happens via a persistent bottom player bar that can expand into a full "Now Playing" view. Logging in is only required to save/view favorite stations — browsing and listening never require it.
 
 ## Capabilities and Constraints
 
@@ -32,7 +32,7 @@ A responsive web app, desktop-first with mobile support. Navigation lives in a p
 
 ## Brand Commitments
 
-Name: "Airwave." After several bespoke visual-world experiments (a cassette-deck fascia, a radar console, a color-reactive glass canvas, a teletext bulletin), the user explicitly chose the category standard as the standing direction: a Spotify-style UI — dark sidebar-driven navigation, rounded album-art cards, a single saturated accent color for buttons/active states, a persistent bottom player bar — with Spotify and YouTube Music named as the craft bar to build against, held at full fidelity rather than treated as a placeholder.
+Name: "Airwave." After several bespoke visual-world experiments (a cassette-deck fascia, a radar console, a color-reactive glass canvas, a teletext bulletin), the user chose the category standard as the standing direction, then rebalanced it to lean more YouTube Music than Spotify: true-black ground, a red accent, a top search bar (not sidebar-based), a "Quick picks" grid of thumbnail-left mini-cards, and a blurred-art color backdrop with an "Up Next" queue in the Now Playing view. Spotify's rounded album-art rails and mood/genre grid remain underneath. Held at full fidelity, not a placeholder.
 
 ## Evidence on Hand
 

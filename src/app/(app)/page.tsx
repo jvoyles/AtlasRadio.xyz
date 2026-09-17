@@ -13,6 +13,7 @@ import {
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
 import { RailCard } from "@/components/RailCard";
+import { QuickPickCard } from "@/components/QuickPickCard";
 import { GenreTile } from "@/components/GenreTile";
 import { usePlayer } from "@/context/PlayerContext";
 import { useGenres } from "@/hooks/useGenres";
@@ -209,12 +210,12 @@ function Browse() {
         <>
           <h1 className="text-2xl font-bold mb-6">Good listening</h1>
 
-          {fresh.length > 0 && (
+          {recentlyPlayed.length > 0 && (
             <section className="mb-8">
-              <SectionHeader title="New & Notable" />
-              <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {fresh.slice(0, 10).map((s) => (
-                  <RailCard
+              <SectionHeader title="Quick picks" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {recentlyPlayed.slice(0, 9).map((s) => (
+                  <QuickPickCard
                     key={s.stationuuid}
                     image={s.favicon}
                     title={s.name}
@@ -226,11 +227,11 @@ function Browse() {
             </section>
           )}
 
-          {recentlyPlayed.length > 0 && (
+          {fresh.length > 0 && (
             <section className="mb-8">
-              <SectionHeader title="Recently played" />
+              <SectionHeader title="New & Notable" />
               <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {recentlyPlayed.slice(0, 10).map((s) => (
+                {fresh.slice(0, 10).map((s) => (
                   <RailCard
                     key={s.stationuuid}
                     image={s.favicon}
@@ -259,7 +260,7 @@ function Browse() {
           </section>
 
           <section className="mb-8">
-            <SectionHeader title="Browse by genre" href="/?section=genres" />
+            <SectionHeader title="Moods & genres" href="/?section=genres" />
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {genres.slice(0, 8).map((g) => (
                 <GenreTile

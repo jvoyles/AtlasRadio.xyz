@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import { useGenres } from "@/hooks/useGenres";
-import { GlobalSearch } from "./GlobalSearch";
 
 const HomeIcon = ({ active }: { active: boolean }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
@@ -15,15 +14,15 @@ const HomeIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const TrendingIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+const TrendingIcon = ({ active }: { active: boolean }) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2}>
     <path d="M3 17l6-6 4 4 8-8" />
     <path d="M17 7h4v4" />
   </svg>
 );
 
-const GlobeIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+const GlobeIcon = ({ active }: { active: boolean }) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2}>
     <circle cx="12" cy="12" r="9" />
     <path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" />
   </svg>
@@ -35,8 +34,8 @@ const HeartIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const GenreIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+const GenreIcon = ({ active }: { active: boolean }) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2}>
     <rect x="3" y="3" width="7" height="7" rx="1.5" />
     <rect x="14" y="3" width="7" height="7" rx="1.5" />
     <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -73,12 +72,12 @@ function NavItem({
   label: string;
   trailing?: React.ReactNode;
 }) {
-  const classes = `flex items-center gap-4 w-full px-3 py-2 text-sm font-bold transition-colors ${
-    active ? "text-foreground" : "text-muted hover:text-foreground"
+  const classes = `flex items-center gap-4 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+    active ? "bg-surface text-foreground font-bold" : "text-muted hover:text-foreground hover:bg-surface"
   }`;
   const content = (
     <>
-      {icon}
+      <span className={active ? "text-accent" : ""}>{icon}</span>
       <span className="truncate">{label}</span>
       {trailing}
     </>
@@ -100,7 +99,7 @@ function NavItem({
 
 export function Sidebar() {
   return (
-    <Suspense fallback={<aside className="hidden md:flex w-64 bg-surface rounded-lg shrink-0 h-full" />}>
+    <Suspense fallback={<aside className="hidden md:flex w-60 border-r border-border shrink-0 h-full" />}>
       <SidebarContent />
     </Suspense>
   );
@@ -125,48 +124,28 @@ function SidebarContent() {
 
   const isHome = pathname === "/" && !activeGenre && activeSection === null;
 
-  const initial = user?.email?.[0]?.toUpperCase();
-
   return (
-    <aside className="hidden md:flex w-64 flex-col bg-surface rounded-lg shrink-0 h-full">
-      <div className="px-5 py-5 flex items-center gap-2">
-        <span className="text-accent shrink-0">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="12" r="11" />
-            <path d="M7 15.5c3-1.3 7-1.3 10 0" stroke="#121212" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-            <path d="M6 12c4-2 8-2 12 0" stroke="#121212" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-            <path d="M5.2 8.7c5.2-2.6 9.4-2.6 13.6 0" stroke="#121212" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          </svg>
-        </span>
-        <span className="text-lg font-bold text-foreground flex-1">Airwave</span>
-        {initial && (
-          <span className="w-7 h-7 rounded-full bg-surface-elevated text-xs font-bold flex items-center justify-center shrink-0">
-            {initial}
-          </span>
-        )}
-      </div>
+    <aside className="hidden md:flex w-60 flex-col border-r border-border shrink-0 h-full">
+      <Link href="/" className="px-5 py-4 flex items-center gap-2">
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="11" fill="var(--color-accent)" />
+          <path d="M9.5 8.3v7.4l6.4-3.7z" fill="#0f0f0f" />
+        </svg>
+        <span className="text-lg font-bold text-foreground">Airwave</span>
+      </Link>
 
-      <nav className="flex flex-col gap-1 px-3">
+      <nav className="flex flex-col gap-0.5 px-3 mt-2">
         <NavItem active={isHome} href="/" icon={<HomeIcon active={isHome} />} label="Home" />
-      </nav>
-
-      <div className="px-3 py-3">
-        <GlobalSearch />
-      </div>
-
-      <div className="mx-3 border-t border-border" />
-
-      <nav className="flex flex-col gap-1 px-3 py-3">
         <NavItem
           active={pathname === "/" && activeSection === "trending"}
           href="/?section=trending"
-          icon={<TrendingIcon />}
+          icon={<TrendingIcon active={pathname === "/" && activeSection === "trending"} />}
           label="Trending"
         />
         <NavItem
           active={pathname === "/" && activeSection === "countries"}
           href="/?section=countries"
-          icon={<GlobeIcon />}
+          icon={<GlobeIcon active={pathname === "/" && activeSection === "countries"} />}
           label="Countries"
         />
         <NavItem
@@ -177,11 +156,13 @@ function SidebarContent() {
         />
       </nav>
 
+      <div className="mx-3 my-3 border-t border-border" />
+
       <div className="flex-1 overflow-y-auto min-h-0 px-3">
         <NavItem
           active={Boolean(activeGenre)}
           onClick={() => setGenresOpen((v) => !v)}
-          icon={<GenreIcon />}
+          icon={<GenreIcon active={Boolean(activeGenre)} />}
           label="Genres"
           trailing={<ChevronIcon open={genresOpen} />}
         />
@@ -214,7 +195,7 @@ function SidebarContent() {
         ) : (
           <Link
             href="/login"
-            className="block text-center py-3 rounded-full text-sm font-bold bg-foreground text-background hover:scale-[1.03] transition-transform"
+            className="block text-center py-2.5 rounded-full border border-muted text-sm font-bold hover:border-foreground hover:bg-surface transition-colors"
           >
             Log in
           </Link>
