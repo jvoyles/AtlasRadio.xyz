@@ -17,11 +17,11 @@ export default function FavoritesPage() {
   if (!user) {
     return (
       <div className="px-10 py-8 max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Favorites</h1>
+        <h1 className="text-sm uppercase tracking-widest font-bold mb-6">Liked Stations</h1>
         <p className="text-muted text-sm mb-4">Log in to save and view your favorite stations.</p>
         <Link
           href="/login"
-          className="inline-block px-5 py-2 rounded-full bg-accent text-background text-sm font-bold hover:bg-accent-hover"
+          className="inline-block px-5 py-2 border border-live text-live text-sm font-bold uppercase tracking-wide hover:bg-live hover:text-background transition-colors"
         >
           Log in
         </Link>
@@ -40,17 +40,17 @@ export default function FavoritesPage() {
 
   return (
     <div className="px-10 py-8">
-      <h1 className="text-2xl font-bold mb-6">Your Favorites</h1>
+      <h1 className="text-sm uppercase tracking-widest font-bold mb-6">Liked Stations</h1>
       {stations.length === 0 ? (
         <p className="text-muted text-sm">
           No favorites yet — head to{" "}
-          <Link href="/" className="text-accent hover:underline">
+          <Link href="/" className="text-live hover:underline">
             Browse
           </Link>{" "}
           and tap the heart on a station.
         </p>
       ) : (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col max-w-2xl">
           {stations.map((station, i) => (
             <SignalRow key={station.stationuuid} index={i} station={station} />
           ))}

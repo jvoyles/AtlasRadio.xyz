@@ -1,30 +1,16 @@
 @import "tailwindcss";
 
-@property --hue1 {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 168;
-}
-
-@property --hue2 {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 190;
-}
-
 :root {
-  --hue1: 168;
-  --hue2: 190;
-  transition: --hue1 2.4s ease, --hue2 2.4s ease;
-
-  --background: #08080d;
-  --surface: rgba(255, 255, 255, 0.055);
-  --surface-elevated: rgba(255, 255, 255, 0.1);
-  --foreground: #f5f4fb;
-  --muted: rgba(245, 244, 251, 0.55);
-  --accent: hsl(var(--hue1) 82% 62%);
-  --accent-hover: hsl(var(--hue1) 82% 70%);
-  --border: rgba(255, 255, 255, 0.12);
+  --background: #0a1830;
+  --surface: #0f2038;
+  --surface-elevated: #16294a;
+  --foreground: #e2f2f5;
+  --muted: #7592ad;
+  --accent: #6fd3e0;
+  --accent-hover: #93e0ea;
+  --live: #ffb400;
+  --live-hover: #ffc84d;
+  --border: #223f61;
 }
 
 @theme inline {
@@ -35,15 +21,17 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-live: var(--live);
+  --color-live-hover: var(--live-hover);
   --color-border: var(--border);
-  --font-sans: var(--font-jakarta);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-bulletin);
+  --font-mono: var(--font-bulletin);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-monospace, monospace;
 }
 
 * {
@@ -62,7 +50,6 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -70,8 +57,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent);
-  color: #08080d;
+  background: var(--live);
+  color: #0a1830;
 }
 
 :focus-visible {
@@ -81,56 +68,29 @@ body {
 
 input,
 textarea {
-  caret-color: var(--accent);
+  caret-color: var(--live);
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-.glass-panel {
-  background: var(--surface);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  border: 1px solid var(--border);
+/* The pips: BBC Radio 4's real time-signal sequence before the Shipping
+   Forecast — six flashes, the last held. The one authored motion in the
+   whole app, played once when a station starts. */
+@keyframes pip-flash {
+  0%,
+  40% {
+    opacity: 0.25;
+  }
+  50%,
+  90% {
+    opacity: 1;
+  }
 }
 
-/* The gradient canvas: three slow-drifting blobs whose hue tracks --hue1/--hue2,
-   the one authored motion signature for this world. */
-@keyframes drift-a {
-  0%, 100% { transform: translate(-8%, -6%) scale(1); }
-  50% { transform: translate(6%, 8%) scale(1.15); }
-}
-
-@keyframes drift-b {
-  0%, 100% { transform: translate(10%, 4%) scale(1.05); }
-  50% { transform: translate(-8%, -10%) scale(0.95); }
-}
-
-@keyframes drift-c {
-  0%, 100% { transform: translate(-4%, 10%) scale(0.9); }
-  50% { transform: translate(8%, -8%) scale(1.1); }
-}
-
-.blob-a {
-  animation: drift-a 26s ease-in-out infinite;
-}
-
-.blob-b {
-  animation: drift-b 32s ease-in-out infinite;
-}
-
-.blob-c {
-  animation: drift-c 22s ease-in-out infinite;
-}
-
-@keyframes disc-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.disc-spin {
-  animation: disc-spin 3.5s linear infinite;
+.pip {
+  animation: pip-flash 0.9s steps(1) 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -147,8 +107,7 @@ textarea {
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
-  height: 4px;
-  border-radius: 999px;
+  height: 3px;
   cursor: pointer;
   /* --value is set inline per-slider; this gradient is what shows through
      the transparent webkit track below, giving a filled-progress look. */
@@ -162,39 +121,35 @@ textarea {
 }
 
 .volume-slider::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 999px;
+  height: 3px;
   background: transparent;
 }
 
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
   background: var(--foreground);
   border: none;
-  margin-top: -4px;
-  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+  margin-top: -3px;
 }
 
 .volume-slider::-moz-range-track {
-  height: 4px;
-  border-radius: 999px;
+  height: 3px;
   background: var(--border);
 }
 
 .volume-slider::-moz-range-progress {
-  height: 4px;
-  border-radius: 999px;
+  height: 3px;
   background: var(--accent);
 }
 
 .volume-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
   background: var(--foreground);
   border: none;
 }

@@ -8,16 +8,27 @@ import {
   recentlyAdded,
   searchStations,
   topStations,
+  registerClick,
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
-import { GenreTile } from "@/components/GenreTile";
-import { RailTile } from "@/components/RailTile";
-import { NowPlayingCanvas } from "@/components/NowPlayingCanvas";
 import { usePlayer } from "@/context/PlayerContext";
-import { registerClick } from "@/lib/radioBrowser";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useGenres } from "@/hooks/useGenres";
 import { countryFlag } from "@/lib/format";
+
+const HeartIcon = ({ filled }: { filled: boolean }) => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill={filled ? "currentColor" : "none"}
+    stroke="currentColor"
+    strokeWidth="1.75"
+  >
+    <path d="M12 21s-7.5-4.6-10-9.2C.5 8.4 2 4.5 5.8 4c2-.3 3.8.7 5 2.4.9-1.7 2.9-2.7 4.9-2.4 3.8.5 5.3 4.4 3.8 7.8-2.5 4.6-10 9.2-10 9.2z" />
+  </svg>
+);
 
 type Section = "home" | "trending" | "genres" | "countries";
 type Country = { name: string; stationcount: number; iso_3166_1: string };
@@ -39,8 +50,22 @@ function BrowseWithKey() {
   );
 }
 
+function SectionHeader({ title, href }: { title: string; href?: string }) {
+  return (
+    <div className="flex items-center justify-between mb-2 pb-1 border-b border-border">
+      <h2 className="text-[12px] uppercase tracking-[0.2em] text-muted">{title}</h2>
+      {href && (
+        <Link href={href} className="text-[12px] uppercase tracking-wide text-muted hover:text-live">
+          All →
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function Browse() {
-  const { play, recentlyPlayed } = usePlayer();
+  const { play, current, recentlyPlayed } = usePlayer();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -122,22 +147,33 @@ function Browse() {
   const sectionTitle: Record<Exclude<Section, "home">, string> = {
     trending: "Trending",
     genres: "Genres",
-    countries: "Countries",
+    countries: "Areas",
+  };
+
+  const featured = current ?? trending[0] ?? null;
+  const featuredFavorited = featured ? isFavorite(featured.stationuuid) : false;
+  const handleFeaturedFavorite = async () => {
+    if (!featured) return;
+    const { needsAuth } = await toggleFavorite(featured);
+    if (needsAuth) router.push("/login");
   };
 
   return (
     <div className="px-10 py-8">
       {section !== "home" && !drilled && (
-        <h1 className="text-2xl font-bold mb-6">{sectionTitle[section]}</h1>
+        <h1 className="text-sm uppercase tracking-widest font-bold mb-6">{sectionTitle[section]}</h1>
       )}
 
       {drilled ? (
         <>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold">
-              {query ? `Results for "${query}"` : genre ? `${genre} stations` : `${country} stations`}
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
+            <h2 className="text-[13px] uppercase tracking-wide text-muted">
+              In re:{" "}
+              <span className="text-foreground">
+                {query ? `"${query}"` : genre ? `${genre} stations` : `${country} stations`}
+              </span>
             </h2>
-            <button onClick={clearDrill} className="text-sm text-muted hover:text-foreground">
+            <button onClick={clearDrill} className="text-[12px] uppercase tracking-wide text-muted hover:text-live">
               ← Back
             </button>
           </div>
@@ -147,7 +183,7 @@ function Browse() {
           ) : results.length === 0 ? (
             <p className="text-muted text-sm">No stations found.</p>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col max-w-2xl">
               {results.map((station, i) => (
                 <SignalRow key={station.stationuuid} index={i} station={station} />
               ))}
@@ -155,7 +191,7 @@ function Browse() {
           )}
         </>
       ) : section === "trending" ? (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col max-w-2xl">
           {trending.map((station, i) => (
             <SignalRow key={station.stationuuid} index={i} station={station} />
           ))}
@@ -163,35 +199,34 @@ function Browse() {
       ) : section === "genres" ? genresLoading ? (
         <p className="text-muted text-sm">Loading genres…</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {genres.map((g) => (
-            <GenreTile
+        <div className="flex flex-col max-w-md">
+          {genres.map((g, i) => (
+            <button
               key={g.tag}
-              label={g.label}
-              gradient={g.gradient}
-              active={false}
               onClick={() => goToGenre(g.tag)}
-            />
+              className="flex items-center gap-3 py-2 border-b border-border text-left hover:text-live transition-colors"
+            >
+              <span className="text-[12px] text-muted w-6 shrink-0 tabular-nums">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="text-sm">{g.label}</span>
+            </button>
           ))}
         </div>
       ) : section === "countries" ? (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col max-w-2xl">
           {countries.map((c, i) => (
             <button
               key={c.name}
               onClick={() => setCountry(c.name)}
-              className="group flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-white/5 text-left transition-colors"
+              className="group flex items-center gap-3 py-2 border-b border-border text-left transition-colors"
             >
-              <span className="text-[12px] text-muted w-5 shrink-0 tabular-nums">
+              <span className="text-[12px] text-muted w-6 shrink-0 tabular-nums">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="w-10 h-10 rounded-full border border-border bg-surface-elevated flex items-center justify-center text-base shrink-0">
-                {countryFlag(c.iso_3166_1)}
-              </span>
+              <span className="shrink-0">{countryFlag(c.iso_3166_1)}</span>
               <span className="min-w-0 flex-1">
-                <p className="text-sm font-semibold truncate group-hover:text-accent transition-colors">
-                  {c.name}
-                </p>
+                <span className="text-sm group-hover:text-live transition-colors">{c.name}</span>
               </span>
               <span className="text-[12px] text-muted tabular-nums shrink-0">
                 {c.stationcount.toLocaleString()} stations
@@ -201,24 +236,41 @@ function Browse() {
         </div>
       ) : (
         <>
-          <section className="mb-10">
-            <NowPlayingCanvas featured={trending[0] ?? null} />
-          </section>
+          <p className="text-[12px] uppercase tracking-wide text-muted mb-8 pb-3 border-b border-border">
+            {trending.length} signals on record · {countries.length} areas reporting
+          </p>
+
+          {featured && (
+            <section className="mb-10">
+              <SectionHeader title={current ? "Now Playing" : "Featured Signal"} />
+              <div className="flex items-center gap-3 py-2">
+                <span className="text-sm flex-1 min-w-0 truncate">{featured.name}</span>
+                <span className="text-[12px] text-muted truncate">
+                  [{featured.country || "Worldwide"} — {featured.tags?.split(",")[0] || "radio"}]
+                </span>
+                <button
+                  onClick={handleFeaturedFavorite}
+                  className={featuredFavorited ? "text-live" : "text-muted hover:text-foreground"}
+                  aria-label="Toggle favorite"
+                >
+                  <HeartIcon filled={featuredFavorited} />
+                </button>
+                <button
+                  onClick={() => handlePlay(featured)}
+                  className="px-3 py-1 border border-live text-live text-[12px] uppercase tracking-wide hover:bg-live hover:text-background transition-colors"
+                >
+                  {current?.stationuuid === featured.stationuuid ? "Playing" : "Play"}
+                </button>
+              </div>
+            </section>
+          )}
 
           {fresh.length > 0 && (
             <section className="mb-10">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold">New & Notable</h2>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {fresh.slice(0, 10).map((s) => (
-                  <RailTile
-                    key={s.stationuuid}
-                    image={s.favicon}
-                    title={s.name}
-                    subtitle={s.country || "Worldwide"}
-                    onClick={() => handlePlay(s)}
-                  />
+              <SectionHeader title="New & Notable" />
+              <div className="flex flex-col max-w-2xl">
+                {fresh.slice(0, 6).map((s, i) => (
+                  <SignalRow key={s.stationuuid} index={i} station={s} />
                 ))}
               </div>
             </section>
@@ -226,79 +278,59 @@ function Browse() {
 
           {recentlyPlayed.length > 0 && (
             <section className="mb-10">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold">Recently Played</h2>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {recentlyPlayed.slice(0, 10).map((s) => (
-                  <RailTile
-                    key={s.stationuuid}
-                    image={s.favicon}
-                    title={s.name}
-                    subtitle={s.country || "Worldwide"}
-                    onClick={() => handlePlay(s)}
-                  />
+              <SectionHeader title="Recently Played" />
+              <div className="flex flex-col max-w-2xl">
+                {recentlyPlayed.slice(0, 6).map((s, i) => (
+                  <SignalRow key={s.stationuuid} index={i} station={s} />
                 ))}
               </div>
             </section>
           )}
 
           <section className="mb-10">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold">Trending Now</h2>
-              <Link href="/?section=trending" className="text-sm text-muted hover:text-accent">
-                See all →
-              </Link>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {trending.slice(0, 10).map((s) => (
-                <RailTile
-                  key={s.stationuuid}
-                  image={s.favicon}
-                  title={s.name}
-                  subtitle={s.country || "Worldwide"}
-                  onClick={() => handlePlay(s)}
-                />
+            <SectionHeader title="Trending Now" href="/?section=trending" />
+            <div className="flex flex-col max-w-2xl">
+              {trending.slice(0, 6).map((s, i) => (
+                <SignalRow key={s.stationuuid} index={i} station={s} />
               ))}
             </div>
           </section>
 
           <section className="mb-10">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold">Browse by Genre</h2>
-              <Link href="/?section=genres" className="text-sm text-muted hover:text-accent">
-                See all →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {genres.slice(0, 8).map((g) => (
-                <GenreTile
+            <SectionHeader title="Browse by Genre" href="/?section=genres" />
+            <div className="flex flex-wrap gap-x-6 gap-y-1 max-w-2xl">
+              {genres.slice(0, 12).map((g) => (
+                <button
                   key={g.tag}
-                  label={g.label}
-                  gradient={g.gradient}
-                  active={false}
                   onClick={() => goToGenre(g.tag)}
-                />
+                  className="text-sm text-muted hover:text-live py-1 transition-colors"
+                >
+                  {g.label}
+                </button>
               ))}
             </div>
           </section>
 
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold">Around the World</h2>
-              <Link href="/?section=countries" className="text-sm text-muted hover:text-accent">
-                See all →
-              </Link>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {countries.slice(0, 10).map((c) => (
-                <RailTile
+            <SectionHeader title="Areas Reporting" href="/?section=countries" />
+            <div className="flex flex-col max-w-2xl">
+              {countries.slice(0, 6).map((c, i) => (
+                <button
                   key={c.name}
-                  icon={<span className="text-3xl">{countryFlag(c.iso_3166_1)}</span>}
-                  title={c.name}
-                  subtitle={`${c.stationcount.toLocaleString()} stations`}
                   onClick={() => goToCountry(c.name)}
-                />
+                  className="group flex items-center gap-3 py-2 border-b border-border text-left transition-colors"
+                >
+                  <span className="text-[12px] text-muted w-6 shrink-0 tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="shrink-0">{countryFlag(c.iso_3166_1)}</span>
+                  <span className="min-w-0 flex-1 text-sm group-hover:text-live transition-colors">
+                    {c.name}
+                  </span>
+                  <span className="text-[12px] text-muted tabular-nums shrink-0">
+                    {c.stationcount.toLocaleString()} stations
+                  </span>
+                </button>
               ))}
             </div>
           </section>

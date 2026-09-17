@@ -48,8 +48,8 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
 
   if (signedUp) {
     return (
-      <div className="w-full max-w-sm glass-panel rounded-3xl p-8 text-center">
-        <h1 className="text-xl font-bold mb-2">Check your email</h1>
+      <div className="w-full max-w-sm border border-border p-8 text-center">
+        <h1 className="text-sm uppercase tracking-widest font-bold mb-3">Check Your Email</h1>
         <p className="text-muted text-sm">
           We sent a confirmation link to <span className="text-foreground">{email}</span>. Confirm it,
           then log in.
@@ -60,12 +60,12 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="flex items-center gap-1 glass-panel rounded-full p-1 mb-6">
+      <div className="flex items-center border border-border mb-6">
         <button
           type="button"
           onClick={() => switchMode("login")}
-          className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
-            mode === "login" ? "bg-accent text-background" : "text-muted hover:text-foreground"
+          className={`flex-1 py-2 text-sm uppercase tracking-wide transition-colors ${
+            mode === "login" ? "bg-live text-background" : "text-muted hover:text-foreground"
           }`}
         >
           Log in
@@ -73,44 +73,44 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
         <button
           type="button"
           onClick={() => switchMode("signup")}
-          className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
-            mode === "signup" ? "bg-accent text-background" : "text-muted hover:text-foreground"
+          className={`flex-1 py-2 text-sm uppercase tracking-wide transition-colors ${
+            mode === "signup" ? "bg-live text-background" : "text-muted hover:text-foreground"
           }`}
         >
           Sign up
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="glass-panel rounded-3xl p-8">
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          {mode === "login" ? "Log in to Airwave" : "Create your account"}
+      <form onSubmit={handleSubmit} className="border border-border p-8">
+        <h1 className="text-sm uppercase tracking-widest font-bold mb-6 text-center">
+          {mode === "login" ? "Log In To Airwave" : "Create Your Account"}
         </h1>
 
         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
-        <label className="block text-xs font-medium text-muted mb-1">Email</label>
+        <label className="block text-xs uppercase tracking-wide text-muted mb-1">Email</label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full mb-4 px-3 py-2 bg-transparent border border-border text-sm focus:outline-none focus:border-live"
         />
 
-        <label className="block text-xs font-medium text-muted mb-1">Password</label>
+        <label className="block text-xs uppercase tracking-wide text-muted mb-1">Password</label>
         <input
           type="password"
           required
           minLength={mode === "signup" ? 6 : undefined}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-6 px-4 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full mb-6 px-3 py-2 bg-transparent border border-border text-sm focus:outline-none focus:border-live"
         />
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2.5 rounded-full bg-accent text-background text-sm font-bold hover:bg-accent-hover disabled:opacity-50"
+          className="w-full py-2.5 border border-live text-live text-sm font-bold uppercase tracking-wide hover:bg-live hover:text-background transition-colors disabled:opacity-50"
         >
           {submitting
             ? mode === "login"
