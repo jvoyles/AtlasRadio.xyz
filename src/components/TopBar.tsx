@@ -23,17 +23,18 @@ export function TopBar() {
         </button>
       </div>
 
-      <div className="flex-1 flex justify-center max-w-2xl mx-auto">
-        <GlobalSearch className="w-full max-w-md" />
-      </div>
+      <div className="flex-1" />
 
-      <div className="shrink-0 w-8 h-8 rounded-full bg-surface flex items-center justify-center text-xs font-bold">
-        {user?.email?.[0]?.toUpperCase() ?? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-          </svg>
-        )}
+      <div className="flex items-center gap-3 shrink-0">
+        <GlobalSearch className="w-56 lg:w-72" />
+        <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-xs font-bold shrink-0">
+          {user?.email?.[0]?.toUpperCase() ?? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+          )}
+        </div>
       </div>
     </header>
   );
