@@ -1,20 +1,18 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   listCountries,
-  recentlyAdded,
   searchStations,
+  stationsWithGeo,
   topStations,
   registerClick,
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
-import { RailCard } from "@/components/RailCard";
-import { QuickPickCard } from "@/components/QuickPickCard";
 import { GenreTile } from "@/components/GenreTile";
+import { Globe } from "@/components/Globe";
 import { usePlayer } from "@/context/PlayerContext";
 import { useGenres } from "@/hooks/useGenres";
 import { countryFlag } from "@/lib/format";
@@ -39,21 +37,8 @@ function BrowseWithKey() {
   );
 }
 
-function SectionHeader({ title, href }: { title: string; href?: string }) {
-  return (
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-xl font-bold">{title}</h2>
-      {href && (
-        <Link href={href} className="text-[13px] font-bold text-muted hover:text-foreground">
-          Show all
-        </Link>
-      )}
-    </div>
-  );
-}
-
 function Browse() {
-  const { play, recentlyPlayed } = usePlayer();
+  const { play, current } = usePlayer();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -67,7 +52,7 @@ function Browse() {
 
   const [trending, setTrending] = useState<Station[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
-  const [fresh, setFresh] = useState<Station[]>([]);
+  const [geoStations, setGeoStations] = useState<Station[]>([]);
   const [results, setResults] = useState<Station[]>([]);
   const [loading, setLoading] = useState(false);
   const { genres, loading: genresLoading } = useGenres();
@@ -77,7 +62,7 @@ function Browse() {
   useEffect(() => {
     topStations(24).then(setTrending).catch(() => setTrending([]));
     listCountries(20).then(setCountries).catch(() => setCountries([]));
-    recentlyAdded(20).then(setFresh).catch(() => setFresh([]));
+    stationsWithGeo(700).then(setGeoStations).catch(() => setGeoStations([]));
   }, []);
 
   useEffect(() => {
@@ -120,13 +105,6 @@ function Browse() {
     router.replace(`/?genre=${encodeURIComponent(tag)}`);
   };
 
-  const goToCountry = (name: string) => {
-    clearDrill();
-    setSection("countries");
-    setCountry(name);
-    router.replace(`/?section=countries&country=${encodeURIComponent(name)}`);
-  };
-
   const handlePlay = (station: Station) => {
     registerClick(station.stationuuid).catch(() => {});
     play(station);
@@ -138,8 +116,26 @@ function Browse() {
     countries: "Countries",
   };
 
+  if (section === "home" && !drilled) {
+    return (
+      <div className="absolute inset-0">
+        <Globe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
+
+        <div className="pointer-events-none absolute top-24 left-0 right-0 flex flex-col items-center gap-2 px-6 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold aurora-text">Every signal, one planet</h1>
+          <p className="text-sm text-muted max-w-md">
+            Drag to spin the planet. Every glowing point is a live station — click one to tune in.
+          </p>
+          {geoStations.length > 0 && (
+            <p className="text-[12px] text-muted tabular-nums">{geoStations.length} signals in orbit</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-6 sm:px-8 py-6">
+    <div className="px-6 sm:px-8 pt-24 pb-32">
       {section !== "home" && !drilled && <h1 className="text-2xl font-bold mb-6">{sectionTitle[section]}</h1>}
 
       {drilled ? (
@@ -206,91 +202,7 @@ function Browse() {
             </button>
           ))}
         </div>
-      ) : (
-        <>
-          <h1 className="text-2xl font-bold mb-6">Good listening</h1>
-
-          {recentlyPlayed.length > 0 && (
-            <section className="mb-8">
-              <SectionHeader title="Quick picks" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {recentlyPlayed.slice(0, 9).map((s) => (
-                  <QuickPickCard
-                    key={s.stationuuid}
-                    image={s.favicon}
-                    title={s.name}
-                    subtitle={s.country || "Worldwide"}
-                    onClick={() => handlePlay(s)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {fresh.length > 0 && (
-            <section className="mb-8">
-              <SectionHeader title="New & Notable" />
-              <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {fresh.slice(0, 10).map((s) => (
-                  <RailCard
-                    key={s.stationuuid}
-                    image={s.favicon}
-                    title={s.name}
-                    subtitle={s.country || "Worldwide"}
-                    onClick={() => handlePlay(s)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section className="mb-8">
-            <SectionHeader title="Trending now" href="/?section=trending" />
-            <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {trending.slice(0, 10).map((s) => (
-                <RailCard
-                  key={s.stationuuid}
-                  image={s.favicon}
-                  title={s.name}
-                  subtitle={s.country || "Worldwide"}
-                  onClick={() => handlePlay(s)}
-                />
-              ))}
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <SectionHeader title="Moods & genres" href="/?section=genres" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {genres.slice(0, 8).map((g) => (
-                <GenreTile
-                  key={g.tag}
-                  label={g.label}
-                  gradient={g.gradient}
-                  active={false}
-                  onClick={() => goToGenre(g.tag)}
-                />
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <SectionHeader title="Around the world" href="/?section=countries" />
-            <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {countries.slice(0, 10).map((c) => (
-                <RailCard
-                  key={c.name}
-                  round
-                  icon={<span className="text-4xl">{countryFlag(c.iso_3166_1)}</span>}
-                  title={c.name}
-                  subtitle={`${c.stationcount.toLocaleString()} stations`}
-                  onClick={() => goToCountry(c.name)}
-                />
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+      ) : null}
     </div>
   );
 }

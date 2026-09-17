@@ -3,15 +3,27 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export function GlobalSearch({ className = "" }: { className?: string }) {
+export function GlobalSearch({
+  className = "",
+  inputClassName = "bg-surface-elevated",
+}: {
+  className?: string;
+  inputClassName?: string;
+}) {
   return (
     <Suspense fallback={null}>
-      <GlobalSearchContent className={className} />
+      <GlobalSearchContent className={className} inputClassName={inputClassName} />
     </Suspense>
   );
 }
 
-function GlobalSearchContent({ className }: { className: string }) {
+function GlobalSearchContent({
+  className,
+  inputClassName,
+}: {
+  className: string;
+  inputClassName: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeQuery = searchParams.get("q") ?? "";
@@ -53,10 +65,10 @@ function GlobalSearchContent({ className }: { className: string }) {
       </svg>
       <input
         type="search"
-        placeholder="What do you want to listen to?"
+        placeholder="Find a station or city…"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-full pl-10 pr-9 py-2.5 rounded-full bg-surface-elevated text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-foreground"
+        className={`w-full pl-10 pr-9 py-2.5 rounded-full text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent ${inputClassName}`}
       />
       {value && (
         <button

@@ -35,13 +35,13 @@ const ForwardIcon = () => (
 );
 
 const ShuffleIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M3 6h4l10 12h4M3 18h4l4-4.5M17 6h4v4M17 18h4v-4M13 8.5L17 6M13 15.5L17 18" />
   </svg>
 );
 
 const RepeatIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M17 2l4 4-4 4" />
     <path d="M3 11V9a4 4 0 0 1 4-4h14" />
     <path d="M7 22l-4-4 4-4" />
@@ -51,8 +51,8 @@ const RepeatIcon = () => (
 
 const HeartIcon = ({ filled }: { filled: boolean }) => (
   <svg
-    width="16"
-    height="16"
+    width="15"
+    height="15"
     viewBox="0 0 24 24"
     fill={filled ? "currentColor" : "none"}
     stroke="currentColor"
@@ -63,7 +63,7 @@ const HeartIcon = ({ filled }: { filled: boolean }) => (
 );
 
 const ExpandIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
   </svg>
 );
@@ -98,59 +98,52 @@ export function PlayerBar() {
     if (needsAuth) router.push("/login");
   };
 
+  if (!current) return null;
+
   return (
     <>
       {expanded && <NowPlayingOverlay onClose={() => setExpanded(false)} />}
 
-      <footer className="relative shrink-0 bg-background border-t border-border px-4 py-3 grid grid-cols-3 items-center gap-4">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-surface-elevated overflow-hidden">
-          <div className={`h-full bg-accent ${live ? "w-full" : "w-0"} transition-[width]`} />
-        </div>
+      <footer className="fixed bottom-4 left-4 right-4 z-30 glass aurora-ring rounded-2xl px-4 sm:px-5 py-3 grid grid-cols-2 sm:grid-cols-3 items-center gap-3 sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          {current ? (
-            <>
-              <button
-                onClick={() => setExpanded(true)}
-                className="w-14 h-14 rounded-md overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center"
-                aria-label="Expand now playing"
-              >
-                {current.favicon ? (
-                  <img
-                    src={current.favicon}
-                    onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
-                    <circle cx="12" cy="14" r="4" />
-                    <path d="M4 14a8 8 0 0 1 16 0" />
-                  </svg>
-                )}
-              </button>
-              <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{current.name}</p>
-                <p className="text-[12px] text-muted truncate">{current.country || current.tags}</p>
-              </div>
-              <button
-                onClick={handleFavorite}
-                className={`shrink-0 ${favorited ? "text-accent" : "text-muted hover:text-foreground"}`}
-                aria-label="Toggle favorite"
-              >
-                <HeartIcon filled={favorited} />
-              </button>
-            </>
-          ) : (
-            <p className="text-sm text-muted">Pick a station to start listening</p>
-          )}
+          <button
+            onClick={() => setExpanded(true)}
+            className="relative w-11 h-11 rounded-xl overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center"
+            aria-label="Expand now playing"
+          >
+            {current.favicon ? (
+              <img
+                src={current.favicon}
+                onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
+                <circle cx="12" cy="14" r="4" />
+                <path d="M4 14a8 8 0 0 1 16 0" />
+              </svg>
+            )}
+            {live && <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-accent pulse-glow" />}
+          </button>
+          <div className="min-w-0 hidden sm:block">
+            <p className="text-sm font-medium truncate">{current.name}</p>
+            <p className="text-[12px] text-muted truncate">{current.country || current.tags}</p>
+          </div>
+          <button
+            onClick={handleFavorite}
+            className={`shrink-0 ${favorited ? "text-accent2" : "text-muted hover:text-foreground"}`}
+            aria-label="Toggle favorite"
+          >
+            <HeartIcon filled={favorited} />
+          </button>
         </div>
 
         <div className="flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4 sm:gap-5">
             <button
               onClick={shuffle}
-              disabled={!current}
-              className="text-muted hover:text-foreground disabled:opacity-30 transition-colors"
+              className="hidden sm:block text-muted hover:text-foreground transition-colors"
               aria-label="Shuffle to another station"
             >
               <ShuffleIcon />
@@ -165,8 +158,7 @@ export function PlayerBar() {
             </button>
             <button
               onClick={toggle}
-              disabled={!current}
-              className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center disabled:opacity-30 hover:scale-105 active:scale-95 transition-transform"
+              className="w-9 h-9 rounded-full bg-accent text-background flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isLoading ? (
@@ -187,7 +179,7 @@ export function PlayerBar() {
             </button>
             <button
               onClick={toggleAutoRetry}
-              className={`transition-colors ${autoRetry ? "text-accent" : "text-muted hover:text-foreground"}`}
+              className={`hidden sm:block transition-colors ${autoRetry ? "text-accent" : "text-muted hover:text-foreground"}`}
               aria-label="Toggle auto-reconnect"
               title="Auto-reconnect if the stream drops"
             >
@@ -198,16 +190,16 @@ export function PlayerBar() {
             <div className="hidden sm:flex items-center gap-2 text-[11px] text-muted tabular-nums w-full max-w-md">
               <span>{formatElapsed(elapsed)}</span>
               <div className="flex-1 h-1 rounded-full bg-surface-elevated overflow-hidden">
-                <div className={`h-full rounded-full bg-foreground ${live ? "w-full" : "w-0"} transition-[width]`} />
+                <div className={`h-full rounded-full bg-accent ${live ? "w-full" : "w-0"} transition-[width]`} />
               </div>
               <span className={live ? "text-accent font-semibold" : ""}>{live ? "LIVE" : "—"}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-3 justify-end">
-          {current && <ShareButton station={current} />}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-muted shrink-0 hidden sm:block">
+        <div className="hidden sm:flex items-center gap-3 justify-end">
+          <ShareButton station={current} />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-muted shrink-0">
             <path d="M3 10v4h4l5 5V5L7 10H3z" />
           </svg>
           <input
@@ -217,13 +209,12 @@ export function PlayerBar() {
             step={0.01}
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
-            className="volume-slider w-24 hidden sm:block"
+            className="volume-slider w-24"
             style={{ "--value": `${volume * 100}%` } as CSSProperties}
           />
           <button
             onClick={() => setExpanded(true)}
-            disabled={!current}
-            className="text-muted hover:text-foreground disabled:opacity-30"
+            className="text-muted hover:text-foreground"
             aria-label="Expand now playing"
           >
             <ExpandIcon />

@@ -20,11 +20,11 @@ Zero-cost, ad-free, no-account-required browsing and listening — powered entir
 
 ## Operating Context
 
-A responsive web app, desktop-first with mobile support. Navigation lives in a persistent left sidebar (Home, Trending, Countries, Genres, Liked Stations); search lives in a persistent top bar. Playback happens via a persistent bottom player bar that can expand into a full "Now Playing" view. Logging in is only required to save/view favorite stations — browsing and listening never require it.
+A responsive web app, desktop-first with mobile support. The home surface is a full-bleed interactive 3D globe (Three.js) plotting live stations by their real geo-coordinates from the Radio Browser API — drag to rotate, click a glowing point to tune in, modeled on radio.garden's spatial-browsing idea but rendered as its own stylized cosmic world rather than a literal earth. Navigation is a floating glass pill bar (Home, Trending, Countries, Genres, Liked, search) overlaying the globe rather than a fixed sidebar. Trending/Countries/Genres/Favorites still exist as list-based fallback browsing beneath the same floating nav. Playback happens via a floating glass player dock that can expand into a full "Now Playing" view. Logging in is only required to save/view favorite stations — browsing and listening never require it.
 
 ## Capabilities and Constraints
 
-- Browse trending stations, genres, and countries; search by name.
+- Browse trending stations, genres, and countries; search by name; spin a 3D globe of real station geo-coordinates and click a point to tune in.
 - Play live streams directly in the browser (the client connects straight to each station's stream URL — no server-side audio proxying or storage).
 - Save favorite stations (requires a Supabase account).
 - Shuffle to another station from recent history; history-based previous/next; auto-reconnect toggle if a stream drops; share a station.
@@ -32,7 +32,7 @@ A responsive web app, desktop-first with mobile support. Navigation lives in a p
 
 ## Brand Commitments
 
-Name: "Airwave." After several bespoke visual-world experiments (a cassette-deck fascia, a radar console, a color-reactive glass canvas, a teletext bulletin), the user chose the category standard as the standing direction, then rebalanced it to lean more YouTube Music than Spotify: true-black ground, a red accent, a top search bar (not sidebar-based), a "Quick picks" grid of thumbnail-left mini-cards, and a blurred-art color backdrop with an "Up Next" queue in the Now Playing view. Spotify's rounded album-art rails and mood/genre grid remain underneath. Held at full fidelity, not a placeholder.
+Name: "Airwave." After several bespoke visual-world experiments (a cassette-deck fascia, a radar console, a color-reactive glass canvas, a teletext bulletin, a Spotify/YouTube-Music blend), the user explicitly asked for a radio.garden-style interactive globe as the core interaction model, executed as a deliberately "out of this world" visual identity rather than a literal earth: a deep-space void (#030308), a stylized dark planet with a glowing teal wireframe grid and a magenta atmospheric halo, a starfield, and station pins as bioluminescent glow-points (teal at rest, pulsing magenta when playing). Chrome is frosted glass floating over the scene — a pill nav bar and a player dock — with an aurora (teal-to-magenta) gradient reserved for the wordmark/hero title only. Space Grotesk carries the type. Held at full fidelity, not a placeholder.
 
 ## Evidence on Hand
 
@@ -43,4 +43,4 @@ None. No real testimonials, case studies, press, or user data exist — this is 
 1. Zero cost, always — never trade the free-tier architecture for a paid convenience.
 2. Frictionless browsing — no login wall to listen; accounts only gate favorites.
 3. Portfolio-grade polish — craft and visual quality matter as much as function, since the primary audience is reviewers, not a captive user base.
-4. Borrow proven patterns deliberately — the UI actively models established products (currently Apple Music) rather than inventing a visual language from scratch.
+4. Borrow proven interaction patterns deliberately (currently radio.garden's spatial globe-browsing), but render the visual world as its own invention rather than a literal skin of the reference.

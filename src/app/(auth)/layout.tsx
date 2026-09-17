@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <circle cx="12" cy="12" r="11" fill="var(--color-accent)" />
           <path d="M9.5 8.3v7.4l6.4-3.7z" fill="#0f0f0f" />
         </svg>
-        <span className="text-lg font-bold">Airwave</span>
+        <span className="text-lg font-bold aurora-text">Airwave</span>
       </Link>
       {children}
     </div>

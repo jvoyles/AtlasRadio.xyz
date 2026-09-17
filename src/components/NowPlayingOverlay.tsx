@@ -143,12 +143,12 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
 
       <button
         onClick={handleClose}
-        className="absolute top-6 left-1/2 -translate-x-1/2 z-10 text-muted hover:text-foreground"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-10 glass rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-foreground"
         aria-label="Close now playing"
       >
         <CollapseIcon />
       </button>
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-6 right-6 z-10 glass rounded-full w-9 h-9 flex items-center justify-center">
         <ShareButton station={current} />
       </div>
 
@@ -180,7 +180,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                 </div>
                 <button
                   onClick={handleFavorite}
-                  className={`shrink-0 ${favorited ? "text-accent" : "text-muted hover:text-foreground"}`}
+                  className={`shrink-0 ${favorited ? "text-accent2" : "text-muted hover:text-foreground"}`}
                   aria-label="Toggle favorite"
                 >
                   <HeartIcon filled={favorited} />
