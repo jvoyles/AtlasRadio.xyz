@@ -151,17 +151,17 @@ body {
   50% { transform: translate(-6%, -6%) scale(1.1); }
 }
 
-/* Cloud shapes drifting left to right across the static sky photo, each
-   at its own randomized speed/delay (set inline per instance). */
-.drift-cloud {
-  animation-name: drift-cloud;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+/* A slow Ken Burns pan-and-zoom on the real sky photo — the only "motion"
+   is the framing, so the clouds themselves never stop looking like a
+   photograph. Scaled up first so panning never reveals an edge. */
+.sky-photo-pan {
+  animation: sky-pan 150s ease-in-out infinite alternate;
+  transform-origin: center center;
 }
 
-@keyframes drift-cloud {
-  from { transform: translateX(-30vw); }
-  to { transform: translateX(130vw); }
+@keyframes sky-pan {
+  0% { transform: scale(1.12) translate(0%, 0%); }
+  100% { transform: scale(1.22) translate(-3%, 2%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
