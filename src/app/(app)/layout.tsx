@@ -11,9 +11,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <PlayerProvider>
       <div className="flex flex-1 min-h-0">
         <Sidebar />
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
           <TopBar />
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
             <div className="md:hidden px-4 pt-4">
               <GlobalSearch />
             </div>
