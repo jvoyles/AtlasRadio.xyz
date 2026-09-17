@@ -17,6 +17,150 @@ function latLongToVector3(lat: number, lon: number, radius: number) {
   );
 }
 
+function makeNoise3() {
+  const hash3 = (x: number, y: number, z: number) => {
+    const h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453;
+    return h - Math.floor(h);
+  };
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  return function noise3(x: number, y: number, z: number) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const xf = x - xi, yf = y - yi, zf = z - zi;
+    const u = xf * xf * (3 - 2 * xf);
+    const v = yf * yf * (3 - 2 * yf);
+    const w = zf * zf * (3 - 2 * zf);
+    const c000 = hash3(xi, yi, zi), c100 = hash3(xi + 1, yi, zi);
+    const c010 = hash3(xi, yi + 1, zi), c110 = hash3(xi + 1, yi + 1, zi);
+    const c001 = hash3(xi, yi, zi + 1), c101 = hash3(xi + 1, yi, zi + 1);
+    const c011 = hash3(xi, yi + 1, zi + 1), c111 = hash3(xi + 1, yi + 1, zi + 1);
+    const x00 = lerp(c000, c100, u), x10 = lerp(c010, c110, u);
+    const x01 = lerp(c001, c101, u), x11 = lerp(c011, c111, u);
+    const y0 = lerp(x00, x10, v), y1 = lerp(x01, x11, v);
+    return lerp(y0, y1, w);
+  };
+}
+
+function fbm(
+  noise3: (x: number, y: number, z: number) => number,
+  x: number,
+  y: number,
+  z: number,
+  octaves: number
+) {
+  let sum = 0;
+  let amp = 0.5;
+  let freq = 1;
+  let max = 0;
+  for (let i = 0; i < octaves; i++) {
+    sum += amp * noise3(x * freq, y * freq, z * freq);
+    max += amp;
+    amp *= 0.5;
+    freq *= 2;
+  }
+  return sum / max;
+}
+
+// Generates a seamless equirectangular landmass texture for the core sphere:
+// fractal noise sampled on (cos theta, sin theta, lat) so it wraps cleanly at
+// the longitude seam, thresholded into bone-cream land against an indigo
+// ocean, with a carved ink line at every coastline and a fine woodgrain
+// stipple — the woodblock-print detail the flat-color sphere was missing.
+function createGlobeTexture() {
+  const W = 768;
+  const H = 384;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  const image = ctx.createImageData(W, H);
+  const data = image.data;
+  const noise3 = makeNoise3();
+
+  const OCEAN_DEEP = [6, 15, 31];
+  const OCEAN_SHALLOW = [17, 33, 61];
+  const LAND = [237, 227, 202];
+  const LAND_SHADE = [210, 193, 154];
+  const INK_LINE = [18, 13, 10];
+
+  const land = new Uint8Array(W * H);
+  const elevation = new Float32Array(W * H);
+
+  for (let py = 0; py < H; py++) {
+    const v = py / H;
+    const latNorm = v * 2 - 1;
+    for (let px = 0; px < W; px++) {
+      const u = px / W;
+      const theta = u * Math.PI * 2;
+      const nx = Math.cos(theta) * 3.4;
+      const nz = Math.sin(theta) * 3.4;
+      const ny = latNorm * 3.4;
+      let n = fbm(noise3, nx, nz, ny, 5);
+      n -= Math.abs(latNorm) * 0.2;
+      const idx = py * W + px;
+      elevation[idx] = n;
+      land[idx] = n > 0.58 ? 1 : 0;
+    }
+  }
+
+  const grainAt = (px: number, py: number) => {
+    const h = Math.sin(px * 12.9898 + py * 78.233) * 43758.5453;
+    return (h - Math.floor(h) - 0.5) * 10;
+  };
+
+  for (let py = 0; py < H; py++) {
+    for (let px = 0; px < W; px++) {
+      const idx = py * W + px;
+      const i4 = idx * 4;
+      const isLand = land[idx] === 1;
+
+      let r: number, g: number, b: number;
+      if (isLand) {
+        const shade = elevation[idx] > 0.62 ? LAND_SHADE : LAND;
+        [r, g, b] = shade;
+      } else {
+        // A fine swirling brightness modulation standing in for hand-carved
+        // ukiyo-e wave lines across the ocean.
+        const ripple =
+          Math.sin(px * 0.16 + Math.sin(py * 0.07) * 16) * 0.5 +
+          Math.sin(py * 0.11 - px * 0.03) * 0.5;
+        const mix = Math.max(0, Math.min(1, 0.5 + ripple * 0.32));
+        r = OCEAN_DEEP[0] + (OCEAN_SHALLOW[0] - OCEAN_DEEP[0]) * mix;
+        g = OCEAN_DEEP[1] + (OCEAN_SHALLOW[1] - OCEAN_DEEP[1]) * mix;
+        b = OCEAN_DEEP[2] + (OCEAN_SHALLOW[2] - OCEAN_DEEP[2]) * mix;
+      }
+
+      if (isLand) {
+        let nearCoast = false;
+        for (let dy = -1; dy <= 1 && !nearCoast; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const sx = px + dx;
+            const sy = py + dy;
+            if (sx < 0 || sx >= W || sy < 0 || sy >= H) continue;
+            if (land[sy * W + sx] === 0) {
+              nearCoast = true;
+              break;
+            }
+          }
+        }
+        if (nearCoast) [r, g, b] = INK_LINE;
+      }
+
+      const grain = grainAt(px, py);
+      data[i4] = Math.max(0, Math.min(255, r + grain));
+      data[i4 + 1] = Math.max(0, Math.min(255, g + grain));
+      data[i4 + 2] = Math.max(0, Math.min(255, b + grain));
+      data[i4 + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(image, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.anisotropy = 4;
+  return texture;
+}
+
 function glowSprite(color: string) {
   const size = 64;
   const canvas = document.createElement("canvas");
@@ -85,10 +229,12 @@ export function Globe({
     };
     controls.addEventListener("start", wakeFromIdle);
 
-    // Core sphere: an aizuri-e ink-wash ocean.
+    // Core sphere: a woodblock-print world — real landmass silhouettes,
+    // carved coastlines, and ripple-line oceans, generated procedurally.
+    const globeTexture = createGlobeTexture();
     const core = new THREE.Mesh(
-      new THREE.SphereGeometry(RADIUS * 0.985, 48, 48),
-      new THREE.MeshBasicMaterial({ color: 0x14284a, transparent: true, opacity: 0.94 })
+      new THREE.SphereGeometry(RADIUS * 0.985, 64, 64),
+      new THREE.MeshBasicMaterial({ map: globeTexture, transparent: true, opacity: 0.97 })
     );
     scene.add(core);
 
@@ -99,7 +245,7 @@ export function Globe({
         color: 0xf3ead9,
         wireframe: true,
         transparent: true,
-        opacity: 0.18,
+        opacity: 0.1,
       })
     );
     scene.add(wireframe);
@@ -264,6 +410,11 @@ export function Globe({
       renderer.domElement.removeEventListener("pointerup", handlePointerUp);
       controls.dispose();
       renderer.dispose();
+      core.geometry.dispose();
+      (core.material as THREE.MeshBasicMaterial).dispose();
+      globeTexture.dispose();
+      wireframe.geometry.dispose();
+      (wireframe.material as THREE.MeshBasicMaterial).dispose();
       starGeometry.dispose();
       pinGeometry.dispose();
       activeGeometry.dispose();

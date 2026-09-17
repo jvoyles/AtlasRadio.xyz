@@ -121,17 +121,12 @@ function Browse() {
       <div className="absolute inset-0">
         <Globe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
 
-        <div className="pointer-events-none absolute top-24 left-0 right-0 flex flex-col items-center gap-2 px-6 text-center">
-          <h1 className="text-2xl sm:text-3xl font-semibold font-serif text-foreground">
-            Every signal, one planet
-          </h1>
-          <p className="text-sm text-muted max-w-md">
-            Drag to spin the planet. Every glowing point is a live station — click one to tune in.
-          </p>
-          {geoStations.length > 0 && (
-            <p className="text-[12px] text-muted tabular-nums">{geoStations.length} signals in orbit</p>
-          )}
-        </div>
+        {geoStations.length > 0 && (
+          <div className="pointer-events-none absolute bottom-28 left-6 flex flex-col gap-0.5">
+            <p className="text-xs font-semibold font-serif text-foreground">Every signal, one planet</p>
+            <p className="text-[11px] text-muted tabular-nums">{geoStations.length} signals in orbit</p>
+          </div>
+        )}
       </div>
     );
   }
