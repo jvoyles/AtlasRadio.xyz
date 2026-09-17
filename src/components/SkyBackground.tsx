@@ -1,136 +1,82 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const TILE_W = 1600;
-const TILE_H = 500;
+// The rooftop sliver in the source photo's bottom-left corner gets cropped
+// off here so only real sky and cloud remain.
+const CROP_BOTTOM_PX = 140;
 
-function hash2(x: number, y: number) {
-  const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-  return h - Math.floor(h);
+function loadCroppedSky(onReady: (dataUrl: string) => void) {
+  const img = new Image();
+  img.src = "/textures/sky-source.jpg";
+  img.onload = () => {
+    const height = img.naturalHeight - CROP_BOTTOM_PX;
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, img.naturalWidth, height, 0, 0, img.naturalWidth, height);
+    onReady(canvas.toDataURL("image/jpeg", 0.92));
+  };
 }
 
-function noise2(x: number, y: number) {
-  const xi = Math.floor(x), yi = Math.floor(y);
-  const xf = x - xi, yf = y - yi;
-  const u = xf * xf * (3 - 2 * xf);
-  const v = yf * yf * (3 - 2 * yf);
-  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-  const a = hash2(xi, yi), b = hash2(xi + 1, yi);
-  const c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
-  return lerp(lerp(a, b, u), lerp(c, d, u), v);
+// A pure integer hash (Math.imul + bitwise ops only) instead of
+// Math.sin-based hashing: transcendental functions can differ in their
+// last bit between the server's and browser's JS engine, which is enough
+// to flip a rendered percentage and fail hydration. Integer ops are
+// bit-exact per the spec, so server and client always agree.
+function hash(seed: number) {
+  let x = Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b);
+  x ^= x >>> 13;
+  x = Math.imul(x, 0xc2b2ae35);
+  x ^= x >>> 16;
+  return (x >>> 0) / 4294967296;
 }
 
-function fbm2(x: number, y: number, octaves: number) {
-  let sum = 0, amp = 0.5, freq = 1, max = 0;
-  for (let i = 0; i < octaves; i++) {
-    sum += amp * noise2(x * freq, y * freq);
-    max += amp;
-    amp *= 0.5;
-    freq *= 2;
-  }
-  return sum / max;
-}
-
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-const smoothstep = (lo: number, hi: number, x: number) => {
-  const t = clamp((x - lo) / (hi - lo), 0, 1);
-  return t * t * (3 - 2 * t);
+type DriftCloud = {
+  top: number;
+  width: number;
+  height: number;
+  duration: number;
+  delay: number;
+  opacity: number;
+  filter: "back" | "mid" | "front";
+  blur: number;
 };
 
-type Cluster = { cx: number; cy: number; r: number; seed: number; squashX: number };
-
-function rand(seed: number) {
-  return hash2(seed * 12.9898, seed * 78.233);
-}
-
-// A handful of individually-placed, individually-shaped cumulus clusters —
-// not a continuous noise field — because real scattered cloud cover is
-// mostly open sky with a few distinct puffs, not an even texture. Each
-// cluster is a soft radial falloff perturbed by its own fbm noise (so the
-// silhouette is organic, not a circle), drawn at three x-offsets so it
-// still wraps seamlessly across the tile's left/right seam.
-function makeClusters(): Cluster[] {
-  const count = 7;
-  const clusters: Cluster[] = [];
-  for (let i = 0; i < count; i++) {
-    const cx = (i / count) * TILE_W + (rand(i * 3.1 + 1) - 0.5) * (TILE_W / count) * 0.7;
-    const cy = TILE_H * 0.22 + rand(i * 5.3 + 2) * TILE_H * 0.4;
-    const isHero = i === Math.floor(count * 0.4);
-    const r = (isHero ? 105 : 34) + rand(i * 7.9 + 3) * (isHero ? 55 : 34);
-    clusters.push({ cx, cy, r, seed: i * 91.7 + 13, squashX: 1.15 + rand(i * 4.4) * 0.5 });
-  }
-  return clusters;
-}
-
-function clusterDensity(px: number, py: number, c: Cluster) {
-  let best = 0;
-  for (const dx of [-TILE_W, 0, TILE_W]) {
-    const ox = px - (c.cx + dx);
-    const oy = py - c.cy;
-    const dist = Math.sqrt((ox / c.squashX) * (ox / c.squashX) + oy * oy) / c.r;
-    if (dist > 1.4) continue;
-    const shapeNoise = fbm2(ox / (c.r * 0.55) + c.seed, oy / (c.r * 0.55) + c.seed, 4);
-    const falloff = smoothstep(1.25, 0.35, dist);
-    const puff = falloff * (0.35 + 0.75 * shapeNoise);
-    if (puff > best) best = puff;
-  }
-  return best;
-}
-
-function makeCloudTile() {
-  const canvas = document.createElement("canvas");
-  canvas.width = TILE_W;
-  canvas.height = TILE_H;
-  const ctx = canvas.getContext("2d")!;
-  const image = ctx.createImageData(TILE_W, TILE_H);
-  const data = image.data;
-
-  const clusters = makeClusters();
-  const lightDx = -6;
-  const lightDy = -9;
-
-  const sampleAll = (px: number, py: number) => {
-    let total = 0;
-    for (const c of clusters) total = Math.max(total, clusterDensity(px, py, c));
-    return smoothstep(0.18, 0.65, total);
-  };
-
-  for (let py = 0; py < TILE_H; py++) {
-    for (let px = 0; px < TILE_W; px++) {
-      const density = sampleAll(px, py);
-      const i = (py * TILE_W + px) * 4;
-      if (density < 0.015) {
-        data[i + 3] = 0;
-        continue;
-      }
-
-      const lit = sampleAll(px + lightDx, py + lightDy);
-      const shadow = clamp(lit - density, 0, 1) * 0.55;
-      const brightness = clamp(0.8 + density * 0.32 - shadow, 0.4, 1);
-
-      const shade = [158, 178, 205];
-      const white = [255, 255, 255];
-      data[i] = mix(shade[0], white[0], brightness);
-      data[i + 1] = mix(shade[1], white[1], brightness);
-      data[i + 2] = mix(shade[2], white[2], brightness);
-      data[i + 3] = smoothstep(0.015, 0.3, density) * 255;
-    }
-  }
-
-  ctx.putImageData(image, 0, 0);
-  return canvas.toDataURL("image/png");
+// A handful of independently drifting cloud shapes on top of the static
+// photo — a soft blob whose silhouette is warped organic (not a rounded
+// rectangle) by an SVG feTurbulence/feDisplacementMap filter, the same
+// technique used by the reference the user pointed to. The real photo
+// behind them supplies photographic realism; these supply visible motion,
+// since panning one static photo reads as the whole sky sliding, not
+// clouds drifting independently.
+function makeDriftClouds(): DriftCloud[] {
+  const filters: DriftCloud["filter"][] = ["back", "mid", "front"];
+  return Array.from({ length: 9 }, (_, i) => {
+    const depth = filters[i % filters.length];
+    const isBack = depth === "back";
+    return {
+      top: 4 + hash(i * 3.1 + 1) * 42,
+      width: (isBack ? 260 : 160) + hash(i * 5.3 + 2) * 220,
+      height: (isBack ? 90 : 60) + hash(i * 7.1 + 3) * 60,
+      duration: (isBack ? 150 : 90) + hash(i * 9.7 + 4) * 90,
+      delay: -hash(i * 4.4 + 5) * 200,
+      opacity: isBack ? 0.55 + hash(i * 2.2) * 0.15 : 0.75 + hash(i * 2.2) * 0.2,
+      filter: depth,
+      blur: isBack ? 3 : 1.5,
+    };
+  });
 }
 
 export function SkyBackground() {
-  const fastRef = useRef<HTMLDivElement>(null);
-  const slowRef = useRef<HTMLDivElement>(null);
+  const photoRef = useRef<HTMLDivElement>(null);
+  const [clouds] = useState(makeDriftClouds);
 
   useEffect(() => {
-    const tile = `url(${makeCloudTile()})`;
-    if (fastRef.current) fastRef.current.style.backgroundImage = tile;
-    if (slowRef.current) slowRef.current.style.backgroundImage = tile;
+    loadCroppedSky((dataUrl) => {
+      if (photoRef.current) photoRef.current.style.backgroundImage = `url(${dataUrl})`;
+    });
   }, []);
 
   return (
@@ -138,29 +84,49 @@ export function SkyBackground() {
       <div
         className="absolute inset-0"
         style={{
-          background: "linear-gradient(to bottom, #1c73c9 0%, #4b96db 40%, #a9cfe9 78%, #eef4f8 100%)",
+          background: "linear-gradient(to bottom, #1c5fa8 0%, #3f83c2 55%, #a9c9dd 100%)",
         }}
       />
       <div
-        ref={slowRef}
-        className="sky-clouds-slow absolute inset-0"
+        ref={photoRef}
+        className="absolute inset-0"
         style={{
-          backgroundRepeat: "repeat-x",
-          backgroundSize: `${TILE_W * 1.3}px auto`,
-          backgroundPosition: "0 8%",
-          opacity: 0.5,
+          backgroundSize: "auto 190%",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "35% 35%",
         }}
       />
-      <div
-        ref={fastRef}
-        className="sky-clouds absolute inset-0"
-        style={{
-          backgroundRepeat: "repeat-x",
-          backgroundSize: `${TILE_W}px auto`,
-          backgroundPosition: "0 32%",
-          opacity: 0.95,
-        }}
-      />
+      <svg width="0" height="0">
+        <defs>
+          <filter id="cloud-filter-back">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed="3" />
+            <feDisplacementMap in="SourceGraphic" scale="60" />
+          </filter>
+          <filter id="cloud-filter-mid">
+            <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="7" />
+            <feDisplacementMap in="SourceGraphic" scale="45" />
+          </filter>
+          <filter id="cloud-filter-front">
+            <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="11" />
+            <feDisplacementMap in="SourceGraphic" scale="35" />
+          </filter>
+        </defs>
+      </svg>
+      {clouds.map((c, i) => (
+        <div
+          key={i}
+          className="drift-cloud absolute rounded-[45%] bg-white"
+          style={{
+            top: `${c.top}%`,
+            width: c.width,
+            height: c.height,
+            opacity: c.opacity,
+            filter: `url(#cloud-filter-${c.filter}) blur(${c.blur}px)`,
+            animationDuration: `${c.duration}s`,
+            animationDelay: `${c.delay}s`,
+          }}
+        />
+      ))}
     </div>
   );
 }
