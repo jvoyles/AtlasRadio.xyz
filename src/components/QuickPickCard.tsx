@@ -20,7 +20,7 @@ export function QuickPickCard({
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-3 w-56 shrink-0 bg-surface hover:bg-surface-elevated rounded-lg overflow-hidden transition-colors pr-3"
+      className="group flex items-center gap-3 w-full bg-surface hover:bg-surface-elevated rounded-lg overflow-hidden transition-colors pr-3"
     >
       <span className="relative w-14 h-14 shrink-0 bg-surface-elevated flex items-center justify-center overflow-hidden">
         {image ? (
