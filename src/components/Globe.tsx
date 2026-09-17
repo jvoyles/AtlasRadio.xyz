@@ -60,11 +60,12 @@ function fbm(
   return sum / max;
 }
 
-// Generates a seamless equirectangular landmass texture for the core sphere:
-// fractal noise sampled on (cos theta, sin theta, lat) so it wraps cleanly at
-// the longitude seam, thresholded into bone-cream land against an indigo
-// ocean, with a carved ink line at every coastline and a fine woodgrain
-// stipple — the woodblock-print detail the flat-color sphere was missing.
+// Generates a seamless equirectangular night-earth texture for the core
+// sphere: fractal noise sampled on (cos theta, sin theta, lat) so it wraps
+// cleanly at the longitude seam, gives a faint charcoal silhouette to land
+// against pure-black ocean, then scatters warm glowing city-light dots over
+// that land — the "network of signals at night" read of a real night-earth
+// image, never a filled, map-like landmass.
 function createGlobeTexture() {
   const W = 768;
   const H = 384;
@@ -76,14 +77,10 @@ function createGlobeTexture() {
   const data = image.data;
   const noise3 = makeNoise3();
 
-  const OCEAN_DEEP = [6, 15, 31];
-  const OCEAN_SHALLOW = [17, 33, 61];
-  const LAND = [237, 227, 202];
-  const LAND_SHADE = [210, 193, 154];
-  const INK_LINE = [18, 13, 10];
+  const OCEAN = [3, 5, 10];
+  const LAND_SILHOUETTE = [13, 15, 22];
 
   const land = new Uint8Array(W * H);
-  const elevation = new Float32Array(W * H);
 
   for (let py = 0; py < H; py++) {
     const v = py / H;
@@ -96,68 +93,101 @@ function createGlobeTexture() {
       const ny = latNorm * 3.4;
       let n = fbm(noise3, nx, nz, ny, 5);
       n -= Math.abs(latNorm) * 0.2;
-      const idx = py * W + px;
-      elevation[idx] = n;
-      land[idx] = n > 0.58 ? 1 : 0;
+      land[py * W + px] = n > 0.58 ? 1 : 0;
     }
   }
-
-  const grainAt = (px: number, py: number) => {
-    const h = Math.sin(px * 12.9898 + py * 78.233) * 43758.5453;
-    return (h - Math.floor(h) - 0.5) * 10;
-  };
 
   for (let py = 0; py < H; py++) {
     for (let px = 0; px < W; px++) {
       const idx = py * W + px;
       const i4 = idx * 4;
-      const isLand = land[idx] === 1;
-
-      let r: number, g: number, b: number;
-      if (isLand) {
-        const shade = elevation[idx] > 0.62 ? LAND_SHADE : LAND;
-        [r, g, b] = shade;
-      } else {
-        // A fine swirling brightness modulation standing in for hand-carved
-        // ukiyo-e wave lines across the ocean.
-        const ripple =
-          Math.sin(px * 0.16 + Math.sin(py * 0.07) * 16) * 0.5 +
-          Math.sin(py * 0.11 - px * 0.03) * 0.5;
-        const mix = Math.max(0, Math.min(1, 0.5 + ripple * 0.32));
-        r = OCEAN_DEEP[0] + (OCEAN_SHALLOW[0] - OCEAN_DEEP[0]) * mix;
-        g = OCEAN_DEEP[1] + (OCEAN_SHALLOW[1] - OCEAN_DEEP[1]) * mix;
-        b = OCEAN_DEEP[2] + (OCEAN_SHALLOW[2] - OCEAN_DEEP[2]) * mix;
-      }
-
-      if (isLand) {
-        let nearCoast = false;
-        for (let dy = -1; dy <= 1 && !nearCoast; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const sx = px + dx;
-            const sy = py + dy;
-            if (sx < 0 || sx >= W || sy < 0 || sy >= H) continue;
-            if (land[sy * W + sx] === 0) {
-              nearCoast = true;
-              break;
-            }
-          }
-        }
-        if (nearCoast) [r, g, b] = INK_LINE;
-      }
-
-      const grain = grainAt(px, py);
-      data[i4] = Math.max(0, Math.min(255, r + grain));
-      data[i4 + 1] = Math.max(0, Math.min(255, g + grain));
-      data[i4 + 2] = Math.max(0, Math.min(255, b + grain));
+      const [r, g, b] = land[idx] === 1 ? LAND_SILHOUETTE : OCEAN;
+      data[i4] = r;
+      data[i4 + 1] = g;
+      data[i4 + 2] = b;
       data[i4 + 3] = 255;
     }
   }
 
   ctx.putImageData(image, 0, 0);
+
+  // City-light glow: sparse, dense-over-hubs dots scattered only on land,
+  // drawn as soft radial blooms rather than filled shapes.
+  const rand = (seed: number) => {
+    const h = Math.sin(seed * 12.9898) * 43758.5453;
+    return h - Math.floor(h);
+  };
+  ctx.globalCompositeOperation = "lighter";
+  let seed = 1;
+  for (let py = 0; py < H; py += 2) {
+    for (let px = 0; px < W; px += 2) {
+      if (land[py * W + px] !== 1) continue;
+      seed += 1;
+      const roll = rand(seed);
+      if (roll > 0.09) continue;
+      const isHub = roll < 0.012;
+      const radius = isHub ? 2.2 + rand(seed * 3.1) * 1.6 : 0.6 + rand(seed * 5.7) * 0.7;
+      const warmth = rand(seed * 7.3);
+      const color = isHub
+        ? `rgba(255,${230 + Math.floor(warmth * 20)},200,${0.5 + warmth * 0.3})`
+        : `rgba(255,${200 + Math.floor(warmth * 40)},150,${0.18 + warmth * 0.22})`;
+      const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, "rgba(255,200,140,0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalCompositeOperation = "source-over";
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = THREE.RepeatWrapping;
   texture.anisotropy = 4;
+  return texture;
+}
+
+// Generates a soft nebula backdrop: overlapping violet/indigo/rose cloud
+// blooms on near-black, painted once and worn by a large backside sphere
+// behind the starfield — the deep-space void the reference sits the planet
+// in, instead of flat black.
+function createNebulaTexture() {
+  const W = 512;
+  const H = 512;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#03040a";
+  ctx.fillRect(0, 0, W, H);
+
+  const rand = (seed: number) => {
+    const h = Math.sin(seed * 78.233) * 43758.5453;
+    return h - Math.floor(h);
+  };
+  const blooms: Array<[number, string]> = [
+    [0.42, "rgba(88,58,140,0.5)"],
+    [0.34, "rgba(140,60,120,0.4)"],
+    [0.3, "rgba(50,70,150,0.4)"],
+    [0.22, "rgba(170,90,140,0.3)"],
+  ];
+  ctx.globalCompositeOperation = "lighter";
+  blooms.forEach(([sizeFrac, color], i) => {
+    const cx = rand(i * 3 + 1) * W;
+    const cy = rand(i * 5 + 2) * H;
+    const r = sizeFrac * W;
+    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, "rgba(3,4,10,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, W, H);
+  });
+  ctx.globalCompositeOperation = "source-over";
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
 
@@ -229,42 +259,38 @@ export function Globe({
     };
     controls.addEventListener("start", wakeFromIdle);
 
-    // Core sphere: a woodblock-print world — real landmass silhouettes,
-    // carved coastlines, and ripple-line oceans, generated procedurally.
+    // Core sphere: a night-earth world — continents legible only as scattered
+    // city-light glow against a black ocean, no filled landmass, no grid.
     const globeTexture = createGlobeTexture();
     const core = new THREE.Mesh(
       new THREE.SphereGeometry(RADIUS * 0.985, 64, 64),
-      new THREE.MeshBasicMaterial({ map: globeTexture, transparent: true, opacity: 0.97 })
+      new THREE.MeshBasicMaterial({ map: globeTexture })
     );
     scene.add(core);
 
-    // Bone-ink linework: the grid meridians, like a woodblock's carved lines.
-    const wireframe = new THREE.Mesh(
-      new THREE.SphereGeometry(RADIUS, 40, 24),
-      new THREE.MeshBasicMaterial({
-        color: 0xf3ead9,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.1,
-      })
-    );
-    scene.add(wireframe);
-
-    // A warm vermillion halo, like ink bleeding at a print's edge.
+    // A cool blue-white atmospheric rim light along the limb.
     const atmosphere = new THREE.Mesh(
-      new THREE.SphereGeometry(RADIUS * 1.08, 32, 32),
+      new THREE.SphereGeometry(RADIUS * 1.06, 32, 32),
       new THREE.MeshBasicMaterial({
-        color: 0xb6392a,
+        color: 0x8fc7ff,
         transparent: true,
-        opacity: 0.05,
+        opacity: 0.09,
         side: THREE.BackSide,
       })
     );
     scene.add(atmosphere);
 
-    // Gold-leaf flecks drifting in the void, standing in for a starfield.
+    // A soft nebula backdrop behind the starfield, instead of flat black void.
+    const nebulaTexture = createNebulaTexture();
+    const nebula = new THREE.Mesh(
+      new THREE.SphereGeometry(30, 24, 24),
+      new THREE.MeshBasicMaterial({ map: nebulaTexture, side: THREE.BackSide, fog: false })
+    );
+    scene.add(nebula);
+
+    // Starfield, mixed white and violet flecks drifting in the void.
     const starGeometry = new THREE.BufferGeometry();
-    const starCount = 1400;
+    const starCount = 1600;
     const starPositions = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount; i++) {
       const r = 8 + Math.random() * 18;
@@ -277,13 +303,34 @@ export function Globe({
     starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
     const starMaterial = new THREE.PointsMaterial({
       size: 0.02,
-      map: glowSprite("rgba(232,201,155,1)"),
+      map: glowSprite("rgba(226,220,255,1)"),
       transparent: true,
       depthWrite: false,
-      opacity: 0.6,
+      opacity: 0.7,
     });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
+    const starGeometry2 = new THREE.BufferGeometry();
+    const starCount2 = 500;
+    const starPositions2 = new Float32Array(starCount2 * 3);
+    for (let i = 0; i < starCount2; i++) {
+      const r = 8 + Math.random() * 18;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      starPositions2[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      starPositions2[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      starPositions2[i * 3 + 2] = r * Math.cos(phi);
+    }
+    starGeometry2.setAttribute("position", new THREE.BufferAttribute(starPositions2, 3));
+    const starMaterial2 = new THREE.PointsMaterial({
+      size: 0.028,
+      map: glowSprite("rgba(196,150,255,1)"),
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.5,
+    });
+    const stars2 = new THREE.Points(starGeometry2, starMaterial2);
+    scene.add(stars2);
 
     // Station pins.
     const validStations = stations.filter(
@@ -299,8 +346,8 @@ export function Globe({
     });
     pinGeometry.setAttribute("position", new THREE.BufferAttribute(pinPositions, 3));
     const pinMaterial = new THREE.PointsMaterial({
-      size: 0.032,
-      map: glowSprite("rgba(182,57,42,1)"),
+      size: 0.03,
+      map: glowSprite("rgba(255,64,48,1)"),
       transparent: true,
       depthWrite: false,
       sizeAttenuation: true,
@@ -308,13 +355,13 @@ export function Globe({
     const pins = new THREE.Points(pinGeometry, pinMaterial);
     scene.add(pins);
 
-    // The currently-playing pin: a larger vermillion seal stamp, pressed
-    // down with a one-shot settle whenever the active station changes.
+    // The currently-playing pin: a larger red glow, pulsing up with a
+    // one-shot settle whenever the active station changes.
     const activeGeometry = new THREE.BufferGeometry();
     activeGeometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3));
     const activeMaterial = new THREE.PointsMaterial({
-      size: 0.075,
-      map: glowSprite("rgba(204,74,55,1)"),
+      size: 0.08,
+      map: glowSprite("rgba(255,90,70,1)"),
       transparent: true,
       depthWrite: false,
       sizeAttenuation: true,
@@ -383,18 +430,19 @@ export function Globe({
         const c3 = c1 + 1;
         const easeOutBack = 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
         const scale = p >= 1 ? 1 : 1.9 - 0.9 * easeOutBack;
-        activeMaterial.size = 0.075 * scale;
+        activeMaterial.size = 0.08 * scale;
       } else {
         activePin.visible = false;
       }
 
       if (idleRotate) {
-        wireframe.rotation.y += 0.0009;
         core.rotation.y += 0.0009;
+        atmosphere.rotation.y += 0.0009;
         pins.rotation.y += 0.0009;
         activePin.rotation.y += 0.0009;
       }
       stars.rotation.y += 0.00006;
+      stars2.rotation.y -= 0.00004;
 
       controls.update();
       renderer.render(scene, camera);
@@ -413,9 +461,13 @@ export function Globe({
       core.geometry.dispose();
       (core.material as THREE.MeshBasicMaterial).dispose();
       globeTexture.dispose();
-      wireframe.geometry.dispose();
-      (wireframe.material as THREE.MeshBasicMaterial).dispose();
+      atmosphere.geometry.dispose();
+      (atmosphere.material as THREE.MeshBasicMaterial).dispose();
+      nebula.geometry.dispose();
+      (nebula.material as THREE.MeshBasicMaterial).dispose();
+      nebulaTexture.dispose();
       starGeometry.dispose();
+      starGeometry2.dispose();
       pinGeometry.dispose();
       activeGeometry.dispose();
       container.removeChild(renderer.domElement);
