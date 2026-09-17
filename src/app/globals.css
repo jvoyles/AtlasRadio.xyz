@@ -1,24 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #eef2f6;
-  --surface: rgba(32, 26, 20, 0.045);
-  --surface-elevated: rgba(32, 26, 20, 0.08);
-  --foreground: #201a14;
-  --muted: rgba(32, 26, 20, 0.6);
-  --accent: #b6392a;
-  --accent-hover: #cc4a37;
-  --border: rgba(32, 26, 20, 0.12);
+  --background: #0a0e17;
+  --surface: rgba(231, 235, 240, 0.05);
+  --surface-elevated: rgba(231, 235, 240, 0.09);
+  --foreground: #e7ebf0;
+  --muted: rgba(231, 235, 240, 0.62);
+  --accent: #2f6feb;
+  --accent-hover: #4a82f5;
+  --border: rgba(231, 235, 240, 0.14);
 
   /* The paper/ink pair: dedicated to the floating chrome (nav, player
-     dock, now-playing card, auth form) — opaque cream card stock with
-     dark ink text, distinct from the translucent dark overlays above
-     that everything else (list rows, hover states) still uses. */
-  --paper: #f2e8d5;
-  --paper-elevated: #e9dab8;
-  --ink: #201a14;
-  --ink-muted: rgba(32, 26, 20, 0.62);
-  --ink-border: rgba(32, 26, 20, 0.14);
+     dock, now-playing card, auth form) — dark glass over the starfield,
+     matching DevGlobe's own floating panels. */
+  --paper: rgba(15, 19, 28, 0.75);
+  --paper-elevated: rgba(15, 19, 28, 0.88);
+  --ink: #e7ebf0;
+  --ink-muted: rgba(231, 235, 240, 0.65);
+  --ink-border: rgba(231, 235, 240, 0.12);
 }
 
 @theme inline {
@@ -82,13 +81,15 @@ body {
   font-family: var(--font-serif), Georgia, serif;
 }
 
-/* Floating chrome: opaque cream card stock with a hairline ink border and
-   a soft paper shadow, replacing the earlier frosted-glass treatment. */
+/* Floating chrome: dark glass over the starfield, matching DevGlobe's own
+   floating panels — a hairline light border, soft shadow, backdrop blur. */
 .paper-card {
   background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--ink-border);
-  box-shadow: 0 8px 24px -8px rgba(13, 21, 38, 0.45);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 @keyframes pulse-glow {
@@ -149,19 +150,6 @@ body {
 @keyframes ambient-drift-b {
   0%, 100% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(-6%, -6%) scale(1.1); }
-}
-
-/* A slow Ken Burns pan-and-zoom on the real sky photo — the only "motion"
-   is the framing, so the clouds themselves never stop looking like a
-   photograph. Scaled up first so panning never reveals an edge. */
-.sky-photo-pan {
-  animation: sky-pan 150s ease-in-out infinite alternate;
-  transform-origin: center center;
-}
-
-@keyframes sky-pan {
-  0% { transform: scale(1.12) translate(0%, 0%); }
-  100% { transform: scale(1.22) translate(-3%, 2%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

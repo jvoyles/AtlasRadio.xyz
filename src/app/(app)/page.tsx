@@ -13,7 +13,7 @@ import {
 import { SignalRow } from "@/components/SignalRow";
 import { GenreTile } from "@/components/GenreTile";
 import { CountryGrid } from "@/components/CountryGrid";
-import { RealisticGlobe } from "@/components/RealisticGlobe";
+import { Globe } from "@/components/Globe";
 import { usePlayer } from "@/context/PlayerContext";
 import { useGenres } from "@/hooks/useGenres";
 
@@ -119,7 +119,7 @@ function Browse() {
   if (section === "home" && !drilled) {
     return (
       <div className="absolute inset-0">
-        <RealisticGlobe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
+        <Globe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
       </div>
     );
   }
