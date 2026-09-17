@@ -10,9 +10,8 @@ import {
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
 import { GenreTile } from "@/components/GenreTile";
-import { PixelCity } from "@/components/PixelCity";
+import { CountryGrid } from "@/components/CountryGrid";
 import { useGenres } from "@/hooks/useGenres";
-import { countryFlag } from "@/lib/format";
 
 type Section = "home" | "trending" | "genres" | "countries";
 type Country = { name: string; stationcount: number; iso_3166_1: string };
@@ -105,16 +104,11 @@ function Browse() {
     countries: "Countries",
   };
 
-  if (section === "home" && !drilled) {
-    return (
-      <div className="absolute inset-0">
-        <PixelCity countries={countries} onSelectCountry={setCountry} />
-      </div>
-    );
-  }
-
   return (
     <div className="px-6 sm:px-8 pt-24 pb-32">
+      {section === "home" && !drilled && (
+        <h1 className="text-2xl font-bold mb-6">Browse by country</h1>
+      )}
       {section !== "home" && !drilled && <h1 className="text-2xl font-bold mb-6">{sectionTitle[section]}</h1>}
 
       {drilled ? (
@@ -160,27 +154,8 @@ function Browse() {
             />
           ))}
         </div>
-      ) : section === "countries" ? (
-        <div className="flex flex-col max-w-2xl">
-          {countries.map((c, i) => (
-            <button
-              key={c.name}
-              onClick={() => setCountry(c.name)}
-              className="group flex items-center gap-4 px-3 py-2.5 rounded-md hover:bg-surface-elevated text-left transition-colors"
-            >
-              <span className="text-sm text-muted w-6 shrink-0 tabular-nums">{i + 1}</span>
-              <span className="w-10 h-10 rounded-md bg-surface-elevated flex items-center justify-center text-lg shrink-0">
-                {countryFlag(c.iso_3166_1)}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="text-sm font-medium">{c.name}</span>
-              </span>
-              <span className="text-sm text-muted tabular-nums shrink-0">
-                {c.stationcount.toLocaleString()} stations
-              </span>
-            </button>
-          ))}
-        </div>
+      ) : section === "countries" || section === "home" ? (
+        <CountryGrid countries={countries} onSelectCountry={setCountry} />
       ) : null}
     </div>
   );

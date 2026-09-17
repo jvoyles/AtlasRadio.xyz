@@ -107,6 +107,50 @@ body {
   animation: pulse-glow 1.8s ease-in-out infinite;
 }
 
+/* A slow, moody drift behind the home country grid — radio.garden's glassy
+   glow, translated into the existing accent instead of a copied palette. */
+.ambient-glow::before,
+.ambient-glow::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.ambient-glow::before {
+  width: 55vw;
+  height: 55vw;
+  max-width: 640px;
+  max-height: 640px;
+  top: -15%;
+  left: -10%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  animation: ambient-drift-a 26s ease-in-out infinite;
+}
+
+.ambient-glow::after {
+  width: 50vw;
+  height: 50vw;
+  max-width: 560px;
+  max-height: 560px;
+  bottom: -15%;
+  right: -10%;
+  background: radial-gradient(circle, #2a3a6b 0%, transparent 70%);
+  animation: ambient-drift-b 32s ease-in-out infinite;
+}
+
+@keyframes ambient-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6%, 8%) scale(1.12); }
+}
+
+@keyframes ambient-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-6%, -6%) scale(1.1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
