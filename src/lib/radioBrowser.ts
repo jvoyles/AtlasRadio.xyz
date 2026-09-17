@@ -6,8 +6,6 @@ export type Station = {
   tags: string;
   country: string;
   clickcount?: number;
-  geo_lat?: number | null;
-  geo_long?: number | null;
 };
 
 const MIRRORS = [
@@ -92,15 +90,4 @@ export function listCountries(limit = 60) {
 
 export function registerClick(stationuuid: string) {
   return apiFetch(`/json/url/${stationuuid}`);
-}
-
-/** Stations that carry real geo coordinates, for plotting on the globe. */
-export function stationsWithGeo(limit = 700) {
-  return apiFetch<Station[]>("/json/stations/search", {
-    limit,
-    has_geo_info: true,
-    order: "clickcount",
-    reverse: true,
-    hidebroken: true,
-  });
 }

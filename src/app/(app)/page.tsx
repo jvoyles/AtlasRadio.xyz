@@ -5,15 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   listCountries,
   searchStations,
-  stationsWithGeo,
   topStations,
-  registerClick,
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
 import { GenreTile } from "@/components/GenreTile";
-import { Globe } from "@/components/Globe";
-import { usePlayer } from "@/context/PlayerContext";
+import { PixelCity } from "@/components/PixelCity";
 import { useGenres } from "@/hooks/useGenres";
 import { countryFlag } from "@/lib/format";
 
@@ -38,7 +35,6 @@ function BrowseWithKey() {
 }
 
 function Browse() {
-  const { play, current } = usePlayer();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,7 +48,6 @@ function Browse() {
 
   const [trending, setTrending] = useState<Station[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
-  const [geoStations, setGeoStations] = useState<Station[]>([]);
   const [results, setResults] = useState<Station[]>([]);
   const [loading, setLoading] = useState(false);
   const { genres, loading: genresLoading } = useGenres();
@@ -61,8 +56,7 @@ function Browse() {
 
   useEffect(() => {
     topStations(24).then(setTrending).catch(() => setTrending([]));
-    listCountries(20).then(setCountries).catch(() => setCountries([]));
-    stationsWithGeo(700).then(setGeoStations).catch(() => setGeoStations([]));
+    listCountries(80).then(setCountries).catch(() => setCountries([]));
   }, []);
 
   useEffect(() => {
@@ -105,11 +99,6 @@ function Browse() {
     router.replace(`/?genre=${encodeURIComponent(tag)}`);
   };
 
-  const handlePlay = (station: Station) => {
-    registerClick(station.stationuuid).catch(() => {});
-    play(station);
-  };
-
   const sectionTitle: Record<Exclude<Section, "home">, string> = {
     trending: "Trending",
     genres: "Genres",
@@ -119,14 +108,7 @@ function Browse() {
   if (section === "home" && !drilled) {
     return (
       <div className="absolute inset-0">
-        <Globe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
-
-        {geoStations.length > 0 && (
-          <div className="pointer-events-none absolute bottom-28 left-6 flex flex-col gap-0.5">
-            <p className="text-xs font-semibold font-serif text-foreground">Every signal, one planet</p>
-            <p className="text-[11px] text-muted tabular-nums">{geoStations.length} signals in orbit</p>
-          </div>
-        )}
+        <PixelCity countries={countries} onSelectCountry={setCountry} />
       </div>
     );
   }
