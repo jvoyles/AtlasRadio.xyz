@@ -91,27 +91,6 @@ body {
   box-shadow: 0 8px 24px -8px rgba(13, 21, 38, 0.45);
 }
 
-@keyframes seal-stamp {
-  0% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-  55% {
-    transform: scale(0.92);
-    opacity: 1;
-  }
-  75% {
-    transform: scale(1.08);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.seal-stamp {
-  animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
 @keyframes pulse-glow {
   0%,
   100% {
