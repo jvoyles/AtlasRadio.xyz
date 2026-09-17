@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { SkyBackground } from "@/components/SkyBackground";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,7 +23,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable} h-full antialiased`}>
-      <body className="min-h-full h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full h-full flex flex-col text-foreground">
+        <SkyBackground />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

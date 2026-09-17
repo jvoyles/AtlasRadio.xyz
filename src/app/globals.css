@@ -151,6 +151,26 @@ body {
   50% { transform: translate(-6%, -6%) scale(1.1); }
 }
 
+/* Two seamless cloud layers drifting at different speeds for a soft
+   parallax — each moves by exactly one tile width so the loop is invisible. */
+.sky-clouds {
+  animation: sky-drift-fast 70s linear infinite;
+}
+
+.sky-clouds-slow {
+  animation: sky-drift-slow 140s linear infinite;
+}
+
+@keyframes sky-drift-fast {
+  from { background-position-x: 0; }
+  to { background-position-x: -1024px; }
+}
+
+@keyframes sky-drift-slow {
+  from { background-position-x: 0; }
+  to { background-position-x: -1638.4px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
