@@ -32,7 +32,7 @@ A responsive web app, desktop-first with mobile support. Navigation lives in a p
 
 ## Brand Commitments
 
-Name: "Airwave." Visual identity is currently modeled closely on Apple Music's web UI — sidebar-driven navigation (no top tab bar), flat editorial list rows instead of boxed cards, artwork-forward square tiles, a red accent color reserved for buttons and active states.
+Name: "Airwave." After several bespoke visual-world experiments (a cassette-deck fascia, a radar console, a color-reactive glass canvas, a teletext bulletin), the user explicitly chose the category standard as the standing direction: a Spotify-style UI — dark sidebar-driven navigation, rounded album-art cards, a single saturated accent color for buttons/active states, a persistent bottom player bar — with Spotify and YouTube Music named as the craft bar to build against, held at full fidelity rather than treated as a placeholder.
 
 ## Evidence on Hand
 

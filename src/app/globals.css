@@ -1,16 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a1830;
-  --surface: #0f2038;
-  --surface-elevated: #16294a;
-  --foreground: #e2f2f5;
-  --muted: #7592ad;
-  --accent: #6fd3e0;
-  --accent-hover: #93e0ea;
-  --live: #ffb400;
-  --live-hover: #ffc84d;
-  --border: #223f61;
+  --background: #121212;
+  --surface: #181818;
+  --surface-elevated: #282828;
+  --foreground: #ffffff;
+  --muted: #a7a7a7;
+  --accent: #1db954;
+  --accent-hover: #1ed760;
+  --border: #2a2a2a;
 }
 
 @theme inline {
@@ -21,27 +19,24 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --color-live: var(--live);
-  --color-live-hover: var(--live-hover);
   --color-border: var(--border);
-  --font-sans: var(--font-bulletin);
-  --font-mono: var(--font-bulletin);
+  --font-sans: var(--font-inter);
 }
 
 body {
-  background: var(--background);
+  background: #000000;
   color: var(--foreground);
-  font-family: var(--font-sans), ui-monospace, monospace;
+  font-family: var(--font-sans), Helvetica, Arial, sans-serif;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--surface-elevated) transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
@@ -49,48 +44,46 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--surface-elevated);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+  background-clip: padding-box;
 }
 
 ::selection {
-  background: var(--live);
-  color: #0a1830;
+  background: var(--accent);
+  color: #000000;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--foreground);
   outline-offset: 2px;
-}
-
-input,
-textarea {
-  caret-color: var(--live);
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* The pips: BBC Radio 4's real time-signal sequence before the Shipping
-   Forecast — six flashes, the last held. The one authored motion in the
-   whole app, played once when a station starts. */
-@keyframes pip-flash {
+/* Spotify's small animated "now playing" equalizer glyph — the one place
+   in this world where motion is authentic rather than ambient decoration. */
+@keyframes eq-bar {
   0%,
-  40% {
-    opacity: 0.25;
+  100% {
+    transform: scaleY(0.3);
   }
-  50%,
-  90% {
-    opacity: 1;
+  50% {
+    transform: scaleY(1);
   }
 }
 
-.pip {
-  animation: pip-flash 0.9s steps(1) 1;
+.eq-bar {
+  animation: eq-bar 1s ease-in-out infinite;
+  transform-origin: bottom;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -107,49 +100,59 @@ textarea {
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
-  height: 3px;
+  height: 4px;
+  border-radius: 999px;
   cursor: pointer;
   /* --value is set inline per-slider; this gradient is what shows through
      the transparent webkit track below, giving a filled-progress look. */
   background: linear-gradient(
     to right,
-    var(--accent) 0%,
-    var(--accent) var(--value, 0%),
-    var(--border) var(--value, 0%),
-    var(--border) 100%
+    var(--foreground) 0%,
+    var(--foreground) var(--value, 0%),
+    var(--surface-elevated) var(--value, 0%),
+    var(--surface-elevated) 100%
   );
 }
 
 .volume-slider::-webkit-slider-runnable-track {
-  height: 3px;
+  height: 4px;
+  border-radius: 999px;
   background: transparent;
 }
 
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 9px;
-  height: 9px;
-  border-radius: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   background: var(--foreground);
   border: none;
-  margin-top: -3px;
+  margin-top: -4px;
+  opacity: 0;
+}
+
+.volume-slider:hover::-webkit-slider-thumb,
+.volume-slider:focus::-webkit-slider-thumb {
+  opacity: 1;
 }
 
 .volume-slider::-moz-range-track {
-  height: 3px;
-  background: var(--border);
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-elevated);
 }
 
 .volume-slider::-moz-range-progress {
-  height: 3px;
-  background: var(--accent);
+  height: 4px;
+  border-radius: 999px;
+  background: var(--foreground);
 }
 
 .volume-slider::-moz-range-thumb {
-  width: 9px;
-  height: 9px;
-  border-radius: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   background: var(--foreground);
   border: none;
 }

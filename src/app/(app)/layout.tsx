@@ -8,9 +8,9 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <PlayerProvider>
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 gap-2 p-2 pb-0">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-surface rounded-lg">
           <div className="md:hidden px-4 pt-4">
             <GlobalSearch />
           </div>

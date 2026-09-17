@@ -11,17 +11,17 @@ export default function FavoritesPage() {
   const { favorites, loading } = useFavorites();
 
   if (authLoading || loading) {
-    return <div className="px-10 py-8 text-muted text-sm">Loading…</div>;
+    return <div className="px-8 py-8 text-muted text-sm">Loading…</div>;
   }
 
   if (!user) {
     return (
-      <div className="px-10 py-8 max-w-md">
-        <h1 className="text-sm uppercase tracking-widest font-bold mb-6">Liked Stations</h1>
+      <div className="px-8 py-8 max-w-md">
+        <h1 className="text-2xl font-bold mb-6">Liked Songs</h1>
         <p className="text-muted text-sm mb-4">Log in to save and view your favorite stations.</p>
         <Link
           href="/login"
-          className="inline-block px-5 py-2 border border-live text-live text-sm font-bold uppercase tracking-wide hover:bg-live hover:text-background transition-colors"
+          className="inline-block px-6 py-2.5 rounded-full bg-accent text-background text-sm font-bold hover:bg-accent-hover transition-colors"
         >
           Log in
         </Link>
@@ -39,12 +39,12 @@ export default function FavoritesPage() {
   }));
 
   return (
-    <div className="px-10 py-8">
-      <h1 className="text-sm uppercase tracking-widest font-bold mb-6">Liked Stations</h1>
+    <div className="px-8 py-8">
+      <h1 className="text-2xl font-bold mb-6">Liked Songs</h1>
       {stations.length === 0 ? (
         <p className="text-muted text-sm">
           No favorites yet — head to{" "}
-          <Link href="/" className="text-live hover:underline">
+          <Link href="/" className="text-accent hover:underline">
             Browse
           </Link>{" "}
           and tap the heart on a station.
