@@ -143,13 +143,13 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
 
       <button
         onClick={handleClose}
-        className="absolute top-6 left-1/2 -translate-x-1/2 z-10 glass rounded-full w-9 h-9 flex items-center justify-center text-muted hover:text-foreground"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-10 paper-card rounded-full w-9 h-9 flex items-center justify-center text-ink-muted hover:text-ink"
         aria-label="Close now playing"
       >
         <CollapseIcon />
       </button>
-      <div className="absolute top-6 right-6 z-10 glass rounded-full w-9 h-9 flex items-center justify-center">
-        <ShareButton station={current} />
+      <div className="absolute top-6 right-6 z-10 paper-card rounded-full w-9 h-9 flex items-center justify-center">
+        <ShareButton station={current} idleClassName="text-ink-muted hover:text-ink" />
       </div>
 
       <div className="relative z-10 h-full overflow-y-auto flex items-center justify-center px-8 py-16">
@@ -173,14 +173,14 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
             <div className="w-full min-w-0">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h1 className="text-xl font-bold truncate">{current.name}</h1>
+                  <h1 className="text-xl font-bold font-serif truncate">{current.name}</h1>
                   <p className="text-sm text-muted truncate">
                     {current.country || "Worldwide"} · {current.tags?.split(",")[0] || "radio"}
                   </p>
                 </div>
                 <button
                   onClick={handleFavorite}
-                  className={`shrink-0 ${favorited ? "text-accent2" : "text-muted hover:text-foreground"}`}
+                  className={`shrink-0 ${favorited ? "text-accent" : "text-muted hover:text-foreground"}`}
                   aria-label="Toggle favorite"
                 >
                   <HeartIcon filled={favorited} />
@@ -218,11 +218,11 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                 </button>
                 <button
                   onClick={toggle}
-                  className="w-14 h-14 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                  className="w-14 h-14 rounded-full bg-accent text-paper flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
                   aria-label={isPlaying ? "Pause" : "Play"}
                 >
                   {isLoading ? (
-                    <span className="w-5 h-5 rounded-full border-2 border-background border-t-transparent animate-spin" />
+                    <span className="w-5 h-5 rounded-full border-2 border-paper border-t-transparent animate-spin" />
                   ) : isPlaying ? (
                     <PauseIcon />
                   ) : (
@@ -252,29 +252,29 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
           {upNext.length > 0 && (
             <div className="w-full max-w-sm lg:pt-2">
               <h2 className="text-sm font-bold uppercase tracking-wide text-muted mb-3">Up Next</h2>
-              <div className="flex flex-col gap-1 bg-background/40 rounded-lg backdrop-blur-sm">
+              <div className="flex flex-col gap-1 paper-card rounded-lg p-2">
                 {upNext.map((station) => (
                   <button
                     key={station.stationuuid}
                     onClick={() => playFromQueue(station)}
-                    className="group flex items-center gap-3 px-2 py-2 rounded-md hover:bg-white/10 text-left transition-colors"
+                    className="group flex items-center gap-3 px-2 py-2 rounded-md hover:bg-paper-elevated text-left transition-colors"
                   >
-                    <span className="relative w-10 h-10 rounded-md overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center">
+                    <span className="relative w-10 h-10 rounded-md overflow-hidden bg-paper-elevated shrink-0 flex items-center justify-center">
                       {station.favicon ? (
                         <img src={station.favicon} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-muted">
                           <circle cx="12" cy="14" r="4" />
                           <path d="M4 14a8 8 0 0 1 16 0" />
                         </svg>
                       )}
-                      <span className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute inset-0 flex items-center justify-center bg-ink/40 text-paper opacity-0 group-hover:opacity-100 transition-opacity">
                         <MiniPlayIcon />
                       </span>
                     </span>
                     <span className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{station.name}</p>
-                      <p className="text-[12px] text-muted truncate">{station.country || "Worldwide"}</p>
+                      <p className="text-sm font-medium text-ink truncate">{station.name}</p>
+                      <p className="text-[12px] text-ink-muted truncate">{station.country || "Worldwide"}</p>
                     </span>
                   </button>
                 ))}

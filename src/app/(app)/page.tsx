@@ -122,7 +122,9 @@ function Browse() {
         <Globe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
 
         <div className="pointer-events-none absolute top-24 left-0 right-0 flex flex-col items-center gap-2 px-6 text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold aurora-text">Every signal, one planet</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold font-serif text-foreground">
+            Every signal, one planet
+          </h1>
           <p className="text-sm text-muted max-w-md">
             Drag to spin the planet. Every glowing point is a live station — click one to tune in.
           </p>

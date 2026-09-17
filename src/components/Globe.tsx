@@ -43,6 +43,7 @@ export function Globe({
   const containerRef = useRef<HTMLDivElement>(null);
   const onSelectRef = useRef(onSelect);
   const currentIdRef = useRef(currentId);
+  const stampStartRef = useRef(0);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -50,6 +51,7 @@ export function Globe({
 
   useEffect(() => {
     currentIdRef.current = currentId;
+    stampStartRef.current = performance.now();
   }, [currentId]);
 
   useEffect(() => {
@@ -83,36 +85,38 @@ export function Globe({
     };
     controls.addEventListener("start", wakeFromIdle);
 
-    // Core sphere: a dark planet with a glowing lat/long wireframe.
+    // Core sphere: an aizuri-e ink-wash ocean.
     const core = new THREE.Mesh(
       new THREE.SphereGeometry(RADIUS * 0.985, 48, 48),
-      new THREE.MeshBasicMaterial({ color: 0x05040c, transparent: true, opacity: 0.92 })
+      new THREE.MeshBasicMaterial({ color: 0x14284a, transparent: true, opacity: 0.94 })
     );
     scene.add(core);
 
+    // Bone-ink linework: the grid meridians, like a woodblock's carved lines.
     const wireframe = new THREE.Mesh(
       new THREE.SphereGeometry(RADIUS, 40, 24),
       new THREE.MeshBasicMaterial({
-        color: 0x2fe6c8,
+        color: 0xf3ead9,
         wireframe: true,
         transparent: true,
-        opacity: 0.14,
+        opacity: 0.18,
       })
     );
     scene.add(wireframe);
 
+    // A warm vermillion halo, like ink bleeding at a print's edge.
     const atmosphere = new THREE.Mesh(
       new THREE.SphereGeometry(RADIUS * 1.08, 32, 32),
       new THREE.MeshBasicMaterial({
-        color: 0xff5cf0,
+        color: 0xb6392a,
         transparent: true,
-        opacity: 0.06,
+        opacity: 0.05,
         side: THREE.BackSide,
       })
     );
     scene.add(atmosphere);
 
-    // Starfield.
+    // Gold-leaf flecks drifting in the void, standing in for a starfield.
     const starGeometry = new THREE.BufferGeometry();
     const starCount = 1400;
     const starPositions = new Float32Array(starCount * 3);
@@ -127,10 +131,10 @@ export function Globe({
     starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
     const starMaterial = new THREE.PointsMaterial({
       size: 0.02,
-      map: glowSprite("rgba(238,242,255,1)"),
+      map: glowSprite("rgba(232,201,155,1)"),
       transparent: true,
       depthWrite: false,
-      opacity: 0.7,
+      opacity: 0.6,
     });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
@@ -149,8 +153,8 @@ export function Globe({
     });
     pinGeometry.setAttribute("position", new THREE.BufferAttribute(pinPositions, 3));
     const pinMaterial = new THREE.PointsMaterial({
-      size: 0.035,
-      map: glowSprite("rgba(47,230,200,1)"),
+      size: 0.032,
+      map: glowSprite("rgba(182,57,42,1)"),
       transparent: true,
       depthWrite: false,
       sizeAttenuation: true,
@@ -158,12 +162,13 @@ export function Globe({
     const pins = new THREE.Points(pinGeometry, pinMaterial);
     scene.add(pins);
 
-    // The currently-playing pin, rendered separately so it can glow and pulse.
+    // The currently-playing pin: a larger vermillion seal stamp, pressed
+    // down with a one-shot settle whenever the active station changes.
     const activeGeometry = new THREE.BufferGeometry();
     activeGeometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3));
     const activeMaterial = new THREE.PointsMaterial({
-      size: 0.09,
-      map: glowSprite("rgba(255,92,240,1)"),
+      size: 0.075,
+      map: glowSprite("rgba(204,74,55,1)"),
       transparent: true,
       depthWrite: false,
       sizeAttenuation: true,
@@ -211,11 +216,9 @@ export function Globe({
     renderer.domElement.addEventListener("pointerdown", handlePointerDown);
     renderer.domElement.addEventListener("pointerup", handlePointerUp);
 
-    const clock = new THREE.Clock();
     let frame = 0;
     const animate = () => {
       frame = requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
 
       const activeStation = validStations.find((s) => s.stationuuid === currentIdRef.current);
       if (activeStation && typeof activeStation.geo_lat === "number" && typeof activeStation.geo_long === "number") {
@@ -224,7 +227,17 @@ export function Globe({
         posAttr.setXYZ(0, v.x, v.y, v.z);
         posAttr.needsUpdate = true;
         activePin.visible = true;
-        activeMaterial.size = 0.07 + Math.sin(t * 3) * 0.02;
+
+        // A seal stamping down: starts oversized, overshoots slightly past
+        // resting size, then settles — a one-shot press, not a loop.
+        const settleDuration = 0.5;
+        const elapsed = (performance.now() - stampStartRef.current) / 1000;
+        const p = Math.min(elapsed / settleDuration, 1);
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        const easeOutBack = 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
+        const scale = p >= 1 ? 1 : 1.9 - 0.9 * easeOutBack;
+        activeMaterial.size = 0.075 * scale;
       } else {
         activePin.visible = false;
       }

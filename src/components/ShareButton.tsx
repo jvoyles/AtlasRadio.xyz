@@ -18,7 +18,13 @@ const CheckIcon = () => (
   </svg>
 );
 
-export function ShareButton({ station }: { station: Station }) {
+export function ShareButton({
+  station,
+  idleClassName = "text-muted hover:text-foreground",
+}: {
+  station: Station;
+  idleClassName?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -39,7 +45,7 @@ export function ShareButton({ station }: { station: Station }) {
   return (
     <button
       onClick={handleShare}
-      className={`transition-colors ${copied ? "text-accent" : "text-muted hover:text-foreground"}`}
+      className={`transition-colors ${copied ? "text-accent" : idleClassName}`}
       aria-label="Share station"
       title="Share this station"
     >

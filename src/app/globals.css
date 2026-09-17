@@ -1,15 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030308;
-  --surface: rgba(255, 255, 255, 0.055);
-  --surface-elevated: rgba(255, 255, 255, 0.1);
-  --foreground: #eef2ff;
-  --muted: rgba(238, 242, 255, 0.58);
-  --accent: #2fe6c8;
-  --accent-hover: #6bf3dc;
-  --accent2: #ff5cf0;
-  --border: rgba(255, 255, 255, 0.14);
+  --background: #0d1526;
+  --surface: rgba(243, 234, 217, 0.06);
+  --surface-elevated: rgba(243, 234, 217, 0.1);
+  --foreground: #f3ead9;
+  --muted: rgba(243, 234, 217, 0.6);
+  --accent: #b6392a;
+  --accent-hover: #cc4a37;
+  --border: rgba(243, 234, 217, 0.14);
+
+  /* The paper/ink pair: dedicated to the floating chrome (nav, player
+     dock, now-playing card, auth form) — opaque cream card stock with
+     dark ink text, distinct from the translucent dark overlays above
+     that everything else (list rows, hover states) still uses. */
+  --paper: #f2e8d5;
+  --paper-elevated: #e9dab8;
+  --ink: #201a14;
+  --ink-muted: rgba(32, 26, 20, 0.62);
+  --ink-border: rgba(32, 26, 20, 0.14);
 }
 
 @theme inline {
@@ -20,9 +29,14 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --color-accent2: var(--accent2);
   --color-border: var(--border);
-  --font-sans: var(--font-space);
+  --color-paper: var(--paper);
+  --color-paper-elevated: var(--paper-elevated);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-border: var(--ink-border);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
 }
 
 body {
@@ -52,7 +66,7 @@ body {
 
 ::selection {
   background: var(--accent);
-  color: #030308;
+  color: #f3ead9;
 }
 
 :focus-visible {
@@ -64,22 +78,38 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.glass {
-  background: var(--surface);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--border);
+.font-serif {
+  font-family: var(--font-serif), Georgia, serif;
 }
 
-.aurora-text {
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* Floating chrome: opaque cream card stock with a hairline ink border and
+   a soft paper shadow, replacing the earlier frosted-glass treatment. */
+.paper-card {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink-border);
+  box-shadow: 0 8px 24px -8px rgba(13, 21, 38, 0.45);
 }
 
-.aurora-ring {
-  box-shadow: 0 0 0 1px var(--border), 0 0 24px 0 color-mix(in srgb, var(--accent) 35%, transparent);
+@keyframes seal-stamp {
+  0% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.92);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.seal-stamp {
+  animation: seal-stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes pulse-glow {
@@ -96,20 +126,6 @@ body {
 
 .pulse-glow {
   animation: pulse-glow 1.8s ease-in-out infinite;
-}
-
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(1.5%, -1%);
-  }
-}
-
-.drift-slow {
-  animation: drift 40s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -135,8 +151,8 @@ body {
     to right,
     var(--accent) 0%,
     var(--accent) var(--value, 0%),
-    var(--surface-elevated) var(--value, 0%),
-    var(--surface-elevated) 100%
+    var(--ink-border) var(--value, 0%),
+    var(--ink-border) 100%
   );
 }
 
@@ -155,13 +171,12 @@ body {
   background: var(--accent);
   border: none;
   margin-top: -4px;
-  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .volume-slider::-moz-range-track {
   height: 3px;
   border-radius: 999px;
-  background: var(--surface-elevated);
+  background: var(--ink-border);
 }
 
 .volume-slider::-moz-range-progress {

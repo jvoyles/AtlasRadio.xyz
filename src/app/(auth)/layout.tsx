@@ -7,9 +7,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <Link href="/" className="flex items-center gap-2 mb-8 text-foreground">
         <svg width="28" height="28" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="11" fill="var(--color-accent)" />
-          <path d="M9.5 8.3v7.4l6.4-3.7z" fill="#0f0f0f" />
+          <path d="M9.5 8.3v7.4l6.4-3.7z" fill="var(--color-paper)" />
         </svg>
-        <span className="text-lg font-bold aurora-text">Airwave</span>
+        <span className="text-lg font-semibold font-serif">Airwave</span>
       </Link>
       {children}
     </div>

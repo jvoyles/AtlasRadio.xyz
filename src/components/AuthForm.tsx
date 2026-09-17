@@ -48,10 +48,10 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
 
   if (signedUp) {
     return (
-      <div className="w-full max-w-sm bg-surface rounded-lg p-8 text-center">
-        <h1 className="text-xl font-bold mb-2">Check your email</h1>
-        <p className="text-muted text-sm">
-          We sent a confirmation link to <span className="text-foreground">{email}</span>. Confirm it,
+      <div className="w-full max-w-sm paper-card rounded-lg p-8 text-center">
+        <h1 className="text-xl font-semibold font-serif mb-2">Check your email</h1>
+        <p className="text-ink-muted text-sm">
+          We sent a confirmation link to <span className="text-ink">{email}</span>. Confirm it,
           then log in.
         </p>
       </div>
@@ -60,12 +60,12 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="flex items-center gap-1 bg-surface rounded-full p-1 mb-6">
+      <div className="flex items-center gap-1 paper-card rounded-full p-1 mb-6">
         <button
           type="button"
           onClick={() => switchMode("login")}
           className={`flex-1 py-2 rounded-full text-sm font-bold transition-colors ${
-            mode === "login" ? "bg-accent text-background" : "text-muted hover:text-foreground"
+            mode === "login" ? "bg-accent text-paper" : "text-ink-muted hover:text-ink"
           }`}
         >
           Log in
@@ -74,43 +74,43 @@ export function AuthForm({ initialMode }: { initialMode: Mode }) {
           type="button"
           onClick={() => switchMode("signup")}
           className={`flex-1 py-2 rounded-full text-sm font-bold transition-colors ${
-            mode === "signup" ? "bg-accent text-background" : "text-muted hover:text-foreground"
+            mode === "signup" ? "bg-accent text-paper" : "text-ink-muted hover:text-ink"
           }`}
         >
           Sign up
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-surface rounded-lg p-8">
-        <h1 className="text-2xl font-bold mb-6 text-center">
+      <form onSubmit={handleSubmit} className="paper-card rounded-lg p-8">
+        <h1 className="text-2xl font-semibold font-serif mb-6 text-center">
           {mode === "login" ? "Log in to Airwave" : "Create your account"}
         </h1>
 
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+        {error && <p className="text-red-700 text-sm mb-4">{error}</p>}
 
-        <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1.5">Email</label>
+        <label className="block text-xs font-bold uppercase tracking-wide text-ink-muted mb-1.5">Email</label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-3 py-2.5 rounded-sm bg-surface-elevated border border-transparent text-sm focus:outline-none focus:border-foreground"
+          className="w-full mb-4 px-3 py-2.5 rounded-sm bg-paper-elevated text-ink border border-transparent text-sm focus:outline-none focus:border-ink"
         />
 
-        <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-1.5">Password</label>
+        <label className="block text-xs font-bold uppercase tracking-wide text-ink-muted mb-1.5">Password</label>
         <input
           type="password"
           required
           minLength={mode === "signup" ? 6 : undefined}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-6 px-3 py-2.5 rounded-sm bg-surface-elevated border border-transparent text-sm focus:outline-none focus:border-foreground"
+          className="w-full mb-6 px-3 py-2.5 rounded-sm bg-paper-elevated text-ink border border-transparent text-sm focus:outline-none focus:border-ink"
         />
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 rounded-full bg-accent text-background text-sm font-bold hover:bg-accent-hover hover:scale-[1.02] transition-transform disabled:opacity-50"
+          className="w-full py-3 rounded-full bg-accent text-paper text-sm font-bold hover:bg-accent-hover hover:scale-[1.02] transition-transform disabled:opacity-50"
         >
           {submitting
             ? mode === "login"
