@@ -5,12 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   listCountries,
   searchStations,
+  stationsWithGeo,
   topStations,
+  registerClick,
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
 import { GenreTile } from "@/components/GenreTile";
 import { CountryGrid } from "@/components/CountryGrid";
+import { RealisticGlobe } from "@/components/RealisticGlobe";
+import { usePlayer } from "@/context/PlayerContext";
 import { useGenres } from "@/hooks/useGenres";
 
 type Section = "home" | "trending" | "genres" | "countries";
@@ -34,6 +38,7 @@ function BrowseWithKey() {
 }
 
 function Browse() {
+  const { play, current } = usePlayer();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -47,6 +52,7 @@ function Browse() {
 
   const [trending, setTrending] = useState<Station[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [geoStations, setGeoStations] = useState<Station[]>([]);
   const [results, setResults] = useState<Station[]>([]);
   const [loading, setLoading] = useState(false);
   const { genres, loading: genresLoading } = useGenres();
@@ -56,6 +62,7 @@ function Browse() {
   useEffect(() => {
     topStations(24).then(setTrending).catch(() => setTrending([]));
     listCountries(80).then(setCountries).catch(() => setCountries([]));
+    stationsWithGeo(700).then(setGeoStations).catch(() => setGeoStations([]));
   }, []);
 
   useEffect(() => {
@@ -98,17 +105,27 @@ function Browse() {
     router.replace(`/?genre=${encodeURIComponent(tag)}`);
   };
 
+  const handlePlay = (station: Station) => {
+    registerClick(station.stationuuid).catch(() => {});
+    play(station);
+  };
+
   const sectionTitle: Record<Exclude<Section, "home">, string> = {
     trending: "Trending",
     genres: "Genres",
     countries: "Countries",
   };
 
+  if (section === "home" && !drilled) {
+    return (
+      <div className="absolute inset-0">
+        <RealisticGlobe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
+      </div>
+    );
+  }
+
   return (
     <div className="px-6 sm:px-8 pt-24 pb-32">
-      {section === "home" && !drilled && (
-        <h1 className="text-2xl font-bold mb-6">Browse by country</h1>
-      )}
       {section !== "home" && !drilled && <h1 className="text-2xl font-bold mb-6">{sectionTitle[section]}</h1>}
 
       {drilled ? (
@@ -154,7 +171,7 @@ function Browse() {
             />
           ))}
         </div>
-      ) : section === "countries" || section === "home" ? (
+      ) : section === "countries" ? (
         <CountryGrid countries={countries} onSelectCountry={setCountry} />
       ) : null}
     </div>

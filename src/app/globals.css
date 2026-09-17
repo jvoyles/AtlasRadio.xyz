@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0d1526;
-  --surface: rgba(243, 234, 217, 0.06);
-  --surface-elevated: rgba(243, 234, 217, 0.1);
-  --foreground: #f3ead9;
-  --muted: rgba(243, 234, 217, 0.6);
+  --background: #eef2f6;
+  --surface: rgba(32, 26, 20, 0.045);
+  --surface-elevated: rgba(32, 26, 20, 0.08);
+  --foreground: #201a14;
+  --muted: rgba(32, 26, 20, 0.6);
   --accent: #b6392a;
   --accent-hover: #cc4a37;
-  --border: rgba(243, 234, 217, 0.14);
+  --border: rgba(32, 26, 20, 0.12);
 
   /* The paper/ink pair: dedicated to the floating chrome (nav, player
      dock, now-playing card, auth form) — opaque cream card stock with
