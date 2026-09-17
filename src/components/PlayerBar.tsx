@@ -102,7 +102,10 @@ export function PlayerBar() {
     <>
       {expanded && <NowPlayingOverlay onClose={() => setExpanded(false)} />}
 
-      <footer className="shrink-0 bg-background border-t border-border px-4 py-3 grid grid-cols-3 items-center gap-4">
+      <footer className="relative shrink-0 bg-background border-t border-border px-4 py-3 grid grid-cols-3 items-center gap-4">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-surface-elevated overflow-hidden">
+          <div className={`h-full bg-accent ${live ? "w-full" : "w-0"} transition-[width]`} />
+        </div>
         <div className="flex items-center gap-3 min-w-0">
           {current ? (
             <>
