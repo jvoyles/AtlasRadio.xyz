@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // One-off Node build tooling, not app source.
     "scripts/**",
+    // Vendored MapLibre worker chunks (see scripts/copy-maplibre-worker.cjs)
+    // — third-party minified output, not app source.
+    "public/maplibre-gl-worker.mjs",
+    "public/maplibre-gl-shared.mjs",
   ]),
 ]);
 
