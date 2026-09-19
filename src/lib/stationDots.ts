@@ -8,14 +8,16 @@ import type { Station } from "@/lib/radioBrowser";
 
 const PIXEL_RATIO = 2;
 
-export const DOT_RGB: [number, number, number] = [139, 108, 255];
-export const DOT_HEX = "#8b6cff";
+export const DOT_RGB: [number, number, number] = [255, 106, 43];
+export const DOT_HEX = "#ff6a2b";
 
 type DotOptions = {
   size: number;
   core: number;
   color: [number, number, number];
   coreColor?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
   period: number;
   phase: number;
   ringAlpha: number;
@@ -70,8 +72,8 @@ function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8
       ctx.arc(c, c, coreR * breathe, 0, Math.PI * 2);
       ctx.fillStyle = opts.coreColor ?? `rgb(${r},${g},${b})`;
       ctx.fill();
-      ctx.lineWidth = 1.2 * PIXEL_RATIO;
-      ctx.strokeStyle = "rgba(255,255,255,0.95)";
+      ctx.lineWidth = (opts.strokeWidth ?? 1.2) * PIXEL_RATIO;
+      ctx.strokeStyle = opts.strokeColor ?? "rgba(255,255,255,0.95)";
       ctx.stroke();
 
       image.data.set(ctx.getImageData(0, 0, px, px).data);
@@ -124,7 +126,10 @@ export function registerStationImages(map: MapLibreMap) {
     createPulsingDot({
       size: 88,
       core: 9,
-      color: [255, 40, 40],
+      color: DOT_RGB,
+      coreColor: "#0a1024",
+      strokeColor: DOT_HEX,
+      strokeWidth: 3.5,
       period: 1.6,
       phase: 0,
       ringAlpha: 0.95,
