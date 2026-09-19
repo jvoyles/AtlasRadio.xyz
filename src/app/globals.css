@@ -119,14 +119,20 @@ body {
   }
 }
 
+/* The input itself is a tall, invisible hit area so a click anywhere near the
+   line jumps the thumb there; the visible 4px track and thumb are drawn on
+   the pseudo-elements. --value is set inline per-slider. */
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
-  height: 3px;
-  border-radius: 999px;
+  height: 20px;
+  background: transparent;
   cursor: pointer;
-  /* --value is set inline per-slider; this gradient is what shows through
-     the transparent webkit track below, giving a filled-progress look. */
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
   background: linear-gradient(
     to right,
     var(--accent) 0%,
@@ -136,41 +142,43 @@ body {
   );
 }
 
-.volume-slider::-webkit-slider-runnable-track {
-  height: 3px;
-  border-radius: 999px;
-  background: transparent;
-}
-
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 11px;
-  height: 11px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #fff;
   border: none;
-  margin-top: -4px;
+  margin-top: -4.5px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.12s ease-out;
+}
+
+.volume-slider:hover::-webkit-slider-thumb,
+.volume-slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
 }
 
 .volume-slider::-moz-range-track {
-  height: 3px;
+  height: 4px;
   border-radius: 999px;
   background: var(--ink-border);
 }
 
 .volume-slider::-moz-range-progress {
-  height: 3px;
+  height: 4px;
   border-radius: 999px;
   background: var(--accent);
 }
 
 .volume-slider::-moz-range-thumb {
-  width: 11px;
-  height: 11px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #fff;
   border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Station hover tooltip on the globe: dark glass like the other floating chrome. */

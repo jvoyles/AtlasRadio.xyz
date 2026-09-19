@@ -172,7 +172,7 @@ export function PlayerBar() {
             step={0.01}
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
-            className="volume-slider w-24"
+            className="volume-slider w-28"
             style={{ "--value": `${volume * 100}%` } as CSSProperties}
           />
           <button
