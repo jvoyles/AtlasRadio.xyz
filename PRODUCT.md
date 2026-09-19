@@ -27,7 +27,7 @@ A responsive web app, desktop-first with real mobile support (on touch screens a
 - Browse trending stations; search by name (a glass command-palette search bar with live suggestions, keyboard navigation and a `/` or Ctrl/Cmd-K shortcut); drag-rotate a real MapLibre GL globe (OpenFreeMap vector tiles: real country borders/labels, real station geo-pins) to tune in, and tuning in from anywhere (a dot or the search box) glides the globe to that station.
 - Play live streams directly in the browser (the client connects straight to each station's stream URL — no server-side audio proxying or storage).
 - Like stations and revisit them on the Liked page (stored in the browser's localStorage; no accounts, no backend).
-- Shuffle to another station from recent history; history-based previous/next; auto-reconnect toggle if a stream drops; share a station.
+- Shuffle to another station from recent history; history-based previous/next; auto-reconnect toggle if a stream drops; share a station from a menu (Copy Link, X, Facebook, WhatsApp) via a deep link (`/?station=<uuid>`) that cues the station and glides the globe to it.
 - **Hard constraint:** the project must stay zero-cost. No paid APIs, no paid hosting tiers, no paid services of any kind may be introduced.
 
 ## Brand Commitments
