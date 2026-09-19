@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Map as MapLibreMap, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Station } from "@/lib/radioBrowser";
+import { applyTerrainPalette, createAtmosphereHalo, createStarfield } from "@/lib/globeLayers";
 
 // The exact free vector-tile style devglobe.app itself uses: OpenFreeMap's
 // "liberty" style, backed by real OpenStreetMap data — no API key, no
@@ -22,32 +23,25 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 // WORKER_URL override, so the worker loads from a stable, real path instead.
 maplibreConfig.WORKER_URL = "/maplibre-gl-worker.mjs";
 
-const SPIN_DEGREES_PER_SEC = 4;
+const SPIN_DEGREES_PER_SEC = 3;
 
-type Star = { x: number; y: number; r: number; base: number; phase: number; speed: number };
 type Comet = { x: number; y: number; angle: number; speed: number; len: number; life: number; maxLife: number };
-
-function makeStars(width: number, height: number): Star[] {
-  return Array.from({ length: 700 }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    r: 0.4 + Math.random() * 1.1,
-    base: 0.25 + Math.random() * 0.55,
-    phase: Math.random() * Math.PI * 2,
-    speed: 0.4 + Math.random() * 1.6,
-  }));
-}
 
 function spawnComet(width: number, height: number): Comet {
   return {
     x: Math.random() * width,
-    y: Math.random() * height * 0.6,
+    y: Math.random() * height,
     angle: Math.random() * Math.PI * 2,
     speed: 8 * Math.random() + 6,
     len: 200 * Math.random() + 150,
     life: 0,
     maxLife: 80 + 40 * Math.random(),
   };
+}
+
+function initialZoom() {
+  const side = Math.min(window.innerWidth, window.innerHeight);
+  return side >= 768 ? 1.5 : (side / 768) * 1.1;
 }
 
 export function Globe({
@@ -78,84 +72,52 @@ export function Globe({
     const container = containerRef.current;
     const canvas = starCanvasRef.current;
     if (!container || !canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = canvas.getContext("2d")!;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    let width = 0;
-    let height = 0;
-    let stars: Star[] = [];
     const comets: Comet[] = [];
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      width = container.clientWidth;
-      height = container.clientHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      stars = makeStars(width, height);
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
     };
+    resize();
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(container);
 
-    const render = (time: number, frames: number) => {
-      ctx.clearRect(0, 0, width, height);
-      for (const star of stars) {
-        const twinkle = reduceMotion ? 1 : 0.65 + 0.35 * Math.sin(time * 0.001 * star.speed + star.phase);
-        ctx.fillStyle = `rgba(255,255,255,${star.base * twinkle})`;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      if (reduceMotion) return;
-
-      if (Math.random() > 1 - 0.001 * frames && comets.length < 1) comets.push(spawnComet(width, height));
+    let last = performance.now();
+    let frame = requestAnimationFrame(function loop(now: number) {
+      const frames = Math.min((now - last) / (1000 / 60), 4);
+      last = now;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (Math.random() > 1 - 0.001 * frames && comets.length < 1) comets.push(spawnComet(canvas.width, canvas.height));
       for (let i = comets.length - 1; i >= 0; i--) {
         const c = comets[i];
         c.life += frames;
         c.x += Math.cos(c.angle) * c.speed * frames;
         c.y += Math.sin(c.angle) * c.speed * frames;
+        const alpha = 1 - c.life / c.maxLife;
         if (c.life >= c.maxLife) {
           comets.splice(i, 1);
           continue;
         }
-        const alpha = Math.sin((c.life / c.maxLife) * Math.PI);
         const tailX = c.x - Math.cos(c.angle) * c.len;
         const tailY = c.y - Math.sin(c.angle) * c.len;
-        const tail = ctx.createLinearGradient(c.x, c.y, tailX, tailY);
-        tail.addColorStop(0, `rgba(255,255,255,${0.8 * alpha})`);
-        tail.addColorStop(1, "rgba(255,255,255,0)");
+        const tail = ctx.createLinearGradient(tailX, tailY, c.x, c.y);
+        tail.addColorStop(0, "rgba(255, 255, 255, 0)");
+        tail.addColorStop(1, `rgba(255, 255, 255, ${alpha})`);
         ctx.strokeStyle = tail;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(c.x, c.y);
-        ctx.lineTo(tailX, tailY);
+        ctx.moveTo(tailX, tailY);
+        ctx.lineTo(c.x, c.y);
         ctx.stroke();
-        ctx.fillStyle = `rgba(200,220,255,${0.5 * alpha})`;
+        ctx.fillStyle = `rgba(200, 220, 255, ${0.5 * alpha})`;
         ctx.beginPath();
-        ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
+        ctx.arc(c.x, c.y, 2, 0, 2 * Math.PI);
         ctx.fill();
       }
-    };
-
-    resize();
-    const resizeObserver = new ResizeObserver(() => {
-      resize();
-      if (reduceMotion) render(0, 0);
-    });
-    resizeObserver.observe(container);
-
-    let frame = 0;
-    let last = performance.now();
-    if (reduceMotion) {
-      render(0, 0);
-    } else {
-      const loop = (now: number) => {
-        frame = requestAnimationFrame(loop);
-        const frames = Math.min((now - last) / (1000 / 60), 4);
-        last = now;
-        render(now, frames);
-      };
       frame = requestAnimationFrame(loop);
-    }
+    });
 
     return () => {
       cancelAnimationFrame(frame);
@@ -169,12 +131,11 @@ export function Globe({
     const map = new MapLibreMap({
       container: mapContainerRef.current,
       style: STYLE_URL,
-      center: [0, 20],
-      zoom: 1.5,
+      center: [0, 30],
+      zoom: initialZoom(),
       minZoom: 0.8,
       maxZoom: 10,
-      pitch: 0,
-      bearing: 0,
+      maxPitch: 85,
       attributionControl: { compact: true },
     });
     mapRef.current = map;
@@ -183,6 +144,13 @@ export function Globe({
 
     map.on("load", () => {
       map.setProjection({ type: "globe" });
+      map.once("render", () => {
+        if (mapContainerRef.current) mapContainerRef.current.style.opacity = "1";
+      });
+      const firstLayerId = map.getStyle().layers?.[0]?.id;
+      map.addLayer(createAtmosphereHalo(), firstLayerId);
+      map.addLayer(createStarfield(), "atmosphere-halo");
+      applyTerrainPalette(map);
       // Starts empty: geo stations arrive from an async fetch that may
       // resolve before or after this "load" event fires, so the source is
       // seeded here and kept in sync by the dedicated effect below on every
@@ -330,7 +298,10 @@ export function Globe({
           import happens to land later in the bundle wins — which
           collapsed this div to height 0 more often than not. An inline
           style always outranks any external stylesheet rule. */}
-      <div ref={mapContainerRef} style={{ position: "absolute", inset: 0 }} />
+      <div
+        ref={mapContainerRef}
+        style={{ position: "absolute", inset: 0, opacity: 0, transition: "opacity 300ms" }}
+      />
     </div>
   );
 }
