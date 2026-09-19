@@ -4,7 +4,6 @@ import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Station } from "@/lib/radioBrowser";
 import { registerClick } from "@/lib/radioBrowser";
-import { useRouter } from "next/navigation";
 import { EqualizerBars } from "./EqualizerBars";
 
 const PlayIcon = () => (
@@ -35,7 +34,6 @@ const HeartIcon = ({ filled }: { filled: boolean }) => (
 export function SignalRow({ index, station }: { index?: number; station: Station }) {
   const { current, isPlaying, play } = usePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const router = useRouter();
 
   const isActive = current?.stationuuid === station.stationuuid;
   const live = isActive && isPlaying;
@@ -46,10 +44,7 @@ export function SignalRow({ index, station }: { index?: number; station: Station
     play(station);
   };
 
-  const handleFavorite = async () => {
-    const { needsAuth } = await toggleFavorite(station);
-    if (needsAuth) router.push("/login");
-  };
+  const handleFavorite = () => toggleFavorite(station);
 
   return (
     <div className="group flex items-center gap-4 px-3 py-2 rounded-md hover:bg-surface-elevated transition-colors">

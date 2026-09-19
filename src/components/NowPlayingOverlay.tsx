@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useRouter } from "next/navigation";
 import { registerClick } from "@/lib/radioBrowser";
 import { ShareButton } from "./ShareButton";
 import { EqualizerBars } from "./EqualizerBars";
@@ -93,7 +92,6 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
     toggleAutoRetry,
   } = usePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const router = useRouter();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -111,10 +109,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
   const live = isPlaying && !isLoading;
   const upNext = recentlyPlayed.filter((s) => s.stationuuid !== current.stationuuid).slice(0, 8);
 
-  const handleFavorite = async () => {
-    const { needsAuth } = await toggleFavorite(current);
-    if (needsAuth) router.push("/login");
-  };
+  const handleFavorite = () => toggleFavorite(current);
 
   const playFromQueue = (station: (typeof upNext)[number]) => {
     registerClick(station.stationuuid).catch(() => {});

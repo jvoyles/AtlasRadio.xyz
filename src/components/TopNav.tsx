@@ -2,9 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { createClient } from "@/lib/supabase/client";
+import { usePathname, useSearchParams } from "next/navigation";
 import { GlobalSearch } from "./GlobalSearch";
 
 const navItems = [
@@ -35,21 +33,13 @@ export function TopNav() {
 
 function TopNavContent() {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading } = useAuth();
   const activeSection = searchParams.get("section");
   const activeGenre = searchParams.get("genre");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (section: string | null) =>
     pathname === "/" && !activeGenre && section === (activeSection ?? null);
-
-  const handleSignOut = async () => {
-    await createClient().auth.signOut();
-    router.push("/");
-    router.refresh();
-  };
 
   const linkClass = (active: boolean) =>
     `relative h-14 px-3.5 flex items-center text-sm font-medium transition-colors ${
@@ -89,25 +79,6 @@ function TopNavContent() {
           inputClassName="rounded-lg bg-surface border border-border text-foreground placeholder:text-muted"
         />
 
-        <div className="hidden md:block">
-          {loading ? null : user ? (
-            <button
-              onClick={handleSignOut}
-              title="Log out"
-              className="w-9 h-9 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center hover:bg-accent-hover transition-colors"
-            >
-              {user.email?.[0]?.toUpperCase()}
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors whitespace-nowrap"
-            >
-              Log in
-            </Link>
-          )}
-        </div>
-
         <button
           onClick={() => setMenuOpen((v) => !v)}
           className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-foreground hover:bg-surface-elevated"
@@ -133,11 +104,6 @@ function TopNavContent() {
               {item.label}
             </Link>
           ))}
-          {!loading && !user && (
-            <Link href="/login" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-semibold text-accent">
-              Log in
-            </Link>
-          )}
         </div>
       )}
     </header>

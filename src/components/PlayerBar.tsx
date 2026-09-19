@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
 import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { NowPlayingOverlay } from "./NowPlayingOverlay";
@@ -86,16 +85,13 @@ export function PlayerBar() {
     toggleAutoRetry,
   } = usePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
 
   const favorited = current ? isFavorite(current.stationuuid) : false;
   const live = isPlaying && !isLoading;
 
-  const handleFavorite = async () => {
-    if (!current) return;
-    const { needsAuth } = await toggleFavorite(current);
-    if (needsAuth) router.push("/login");
+  const handleFavorite = () => {
+    if (current) toggleFavorite(current);
   };
 
   if (!current) return null;

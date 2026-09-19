@@ -1,79 +1,78 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { useCallback, useSyncExternalStore } from "react";
 import type { Station } from "@/lib/radioBrowser";
 
-export type Favorite = {
-  station_uuid: string;
-  station_name: string;
-  stream_url: string;
-  favicon: string | null;
-  country: string | null;
-  tags: string | null;
-};
+// Favorites live in this browser's localStorage — there are no accounts, so
+// nothing is stored server-side. A tiny external store keeps every heart
+// button (list rows, player bar, now-playing view) in sync.
+
+const STORAGE_KEY = "airwave:favorites";
+const EMPTY: Station[] = [];
+
+let cache: Station[] | null = null;
+const listeners = new Set<() => void>();
+
+function read(): Station[] {
+  if (cache) return cache;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    cache = raw ? (JSON.parse(raw) as Station[]) : EMPTY;
+  } catch {
+    cache = EMPTY;
+  }
+  return cache;
+}
+
+function write(next: Station[]) {
+  cache = next;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {}
+  listeners.forEach((l) => l());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY) {
+      cache = null;
+      listener();
+    }
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener("storage", onStorage);
+  };
+}
 
 export function useFavorites() {
-  const { user } = useAuth();
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    if (!user) {
-      setFavorites([]);
-      setLoading(false);
-      return;
-    }
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("favorites")
-      .select("station_uuid, station_name, stream_url, favicon, country, tags")
-      .order("created_at", { ascending: false });
-    setFavorites(data ?? []);
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => {
-    const run = async () => {
-      await refresh();
-    };
-    run();
-  }, [refresh]);
+  const favorites = useSyncExternalStore(subscribe, read, () => EMPTY);
 
   const isFavorite = useCallback(
-    (stationuuid: string) => favorites.some((f) => f.station_uuid === stationuuid),
+    (stationuuid: string) => favorites.some((f) => f.stationuuid === stationuuid),
     [favorites]
   );
 
-  const toggleFavorite = useCallback(
-    async (station: Station) => {
-      if (!user) return { needsAuth: true };
-      const supabase = createClient();
+  const toggleFavorite = useCallback((station: Station) => {
+    const current = read();
+    if (current.some((f) => f.stationuuid === station.stationuuid)) {
+      write(current.filter((f) => f.stationuuid !== station.stationuuid));
+    } else {
+      write([
+        {
+          stationuuid: station.stationuuid,
+          name: station.name,
+          url_resolved: station.url_resolved,
+          favicon: station.favicon,
+          tags: station.tags,
+          country: station.country,
+        },
+        ...current,
+      ]);
+    }
+  }, []);
 
-      if (isFavorite(station.stationuuid)) {
-        await supabase
-          .from("favorites")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("station_uuid", station.stationuuid);
-      } else {
-        await supabase.from("favorites").insert({
-          user_id: user.id,
-          station_uuid: station.stationuuid,
-          station_name: station.name,
-          stream_url: station.url_resolved,
-          favicon: station.favicon || null,
-          country: station.country || null,
-          tags: station.tags || null,
-        });
-      }
-      await refresh();
-      return { needsAuth: false };
-    },
-    [user, isFavorite, refresh]
-  );
-
-  return { favorites, loading, isFavorite, toggleFavorite };
+  return { favorites, isFavorite, toggleFavorite };
 }
