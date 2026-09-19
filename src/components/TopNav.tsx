@@ -30,9 +30,9 @@ export function TopNav() {
   );
 }
 
-// Three floating glass islands over the globe. The centre one is a tuner
-// dial: a glowing needle slides to the active section along a row of scale
-// ticks, and the logo orb pings while a station is playing.
+// Three floating glass islands over the globe, all 48px tall. A glowing
+// needle slides to the active section, and the logo orb pings while a
+// station is playing.
 function TopNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -96,11 +96,6 @@ function TopNavContent() {
               style={{ background: DOT_HEX, boxShadow: `0 0 12px 2px ${DOT_HEX}` }}
             />
           </span>
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-5 bottom-[3px] h-1 opacity-25"
-            style={{ backgroundImage: "repeating-linear-gradient(to right, #fff 0 1px, transparent 1px 7px)" }}
-          />
           {items.map((item) => (
             <Link
               key={item.label}

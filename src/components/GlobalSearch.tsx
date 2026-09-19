@@ -130,7 +130,7 @@ function GlobalSearchContent({ className }: { className: string }) {
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div
-        className={`group flex items-center gap-2.5 h-10 pl-3.5 pr-2 rounded-full border backdrop-blur-xl transition-all duration-200 ${
+        className={`group flex items-center gap-2.5 h-12 pl-4 pr-3 rounded-full border backdrop-blur-xl transition-all duration-200 ${
           open
             ? "bg-white/[0.09] border-accent/70 shadow-[0_0_0_4px_rgba(47,111,235,0.18),0_8px_30px_-8px_rgba(47,111,235,0.5)]"
             : "bg-white/[0.05] border-white/10 hover:bg-white/[0.08] hover:border-white/20"
