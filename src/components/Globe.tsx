@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Map as MapLibreMap, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
+import { Map as MapLibreMap, Popup, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Station } from "@/lib/radioBrowser";
+import {
+  ACTIVE_DOT_IMAGE,
+  HOVER_RING_IMAGE,
+  buildStationTooltip,
+  dotVariant,
+  registerStationImages,
+} from "@/lib/stationDots";
 import { applyTerrainPalette, createAtmosphereHalo, createStarfield } from "@/lib/globeLayers";
 
 // The exact free vector-tile style devglobe.app itself uses: OpenFreeMap's
@@ -155,20 +162,31 @@ export function Globe({
       // resolve before or after this "load" event fires, so the source is
       // seeded here and kept in sync by the dedicated effect below on every
       // `stations` change, rather than captured once from this closure.
+      registerStationImages(map);
+
+      map.addSource("hovered-station", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "hovered-station-layer",
+        type: "symbol",
+        source: "hovered-station",
+        layout: { "icon-image": HOVER_RING_IMAGE, "icon-allow-overlap": true, "icon-ignore-placement": true },
+      });
+
       map.addSource("stations", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
       map.addLayer({
         id: "stations-layer",
-        type: "circle",
+        type: "symbol",
         source: "stations",
-        paint: {
-          "circle-radius": 3.5,
-          "circle-color": "#ffffff",
-          "circle-opacity": 0.85,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "rgba(0,0,0,0.35)",
+        layout: {
+          "icon-image": ["concat", "station-dot-", ["to-string", ["get", "variant"]]],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
         },
       });
 
@@ -178,15 +196,9 @@ export function Globe({
       });
       map.addLayer({
         id: "active-station-layer",
-        type: "circle",
+        type: "symbol",
         source: "active-station",
-        paint: {
-          "circle-radius": 8,
-          "circle-color": "#ff7a5a",
-          "circle-opacity": 0.9,
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#ffffff",
-        },
+        layout: { "icon-image": ACTIVE_DOT_IMAGE, "icon-allow-overlap": true, "icon-ignore-placement": true },
       });
 
       map.on("click", "stations-layer", (e: MapLayerMouseEvent) => {
@@ -194,15 +206,50 @@ export function Globe({
         const station = stationsRef.current.find((s) => s.stationuuid === id);
         if (station) onSelectRef.current(station);
       });
-      map.on("mouseenter", "stations-layer", () => {
+
+      const tooltip = new Popup({
+        className: "station-tooltip",
+        closeButton: false,
+        closeOnClick: false,
+        closeOnMove: false,
+        anchor: "bottom",
+        offset: 16,
+        maxWidth: "260px",
+      });
+      let hoveredId: string | null = null;
+      const setHovered = (station: Station | null) => {
+        const hoveredSource = map.getSource("hovered-station") as GeoJSONSource | undefined;
+        if (!station || typeof station.geo_lat !== "number" || typeof station.geo_long !== "number") {
+          hoveredId = null;
+          hovering = false;
+          tooltip.remove();
+          hoveredSource?.setData({ type: "FeatureCollection", features: [] });
+          return;
+        }
+        if (station.stationuuid === hoveredId) return;
+        hoveredId = station.stationuuid;
+        hovering = true;
+        const lngLat: [number, number] = [station.geo_long, station.geo_lat];
+        tooltip.setLngLat(lngLat).setDOMContent(buildStationTooltip(station)).addTo(map);
+        hoveredSource?.setData({
+          type: "FeatureCollection",
+          features: [{ type: "Feature", geometry: { type: "Point", coordinates: lngLat }, properties: {} }],
+        });
+      };
+      map.on("mousemove", "stations-layer", (e: MapLayerMouseEvent) => {
         map.getCanvas().style.cursor = "pointer";
+        const id = e.features?.[0]?.properties?.id;
+        setHovered(stationsRef.current.find((s) => s.stationuuid === id) ?? null);
       });
       map.on("mouseleave", "stations-layer", () => {
         map.getCanvas().style.cursor = "";
+        setHovered(null);
       });
+      map.on("dragstart", () => setHovered(null));
     });
 
     let spinning = true;
+    let hovering = false;
     let idleTimeout: ReturnType<typeof setTimeout> | null = null;
     const pauseSpin = () => {
       spinning = false;
@@ -220,7 +267,7 @@ export function Globe({
       frame = requestAnimationFrame(spin);
       const dt = (now - lastTime) / 1000;
       lastTime = now;
-      if (spinning) {
+      if (spinning && !hovering) {
         const center = map.getCenter();
         map.jumpTo({ center: [center.lng + SPIN_DEGREES_PER_SEC * dt, center.lat] });
       }
@@ -250,12 +297,12 @@ export function Globe({
     const validStations = stations.filter(
       (s) => typeof s.geo_lat === "number" && typeof s.geo_long === "number"
     );
-    const stationsGeoJson: GeoJSON.FeatureCollection<GeoJSON.Point, { id: string }> = {
+    const stationsGeoJson: GeoJSON.FeatureCollection<GeoJSON.Point, { id: string; variant: number }> = {
       type: "FeatureCollection",
       features: validStations.map((s) => ({
         type: "Feature",
         geometry: { type: "Point", coordinates: [s.geo_long as number, s.geo_lat as number] },
-        properties: { id: s.stationuuid },
+        properties: { id: s.stationuuid, variant: dotVariant(s.stationuuid) },
       })),
     };
     const apply = () => (map.getSource("stations") as GeoJSONSource | undefined)?.setData(stationsGeoJson);
