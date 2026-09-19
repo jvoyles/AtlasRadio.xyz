@@ -4,19 +4,17 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { GlobalSearch } from "./GlobalSearch";
+import { LogoMark } from "./LogoMark";
 import { usePlayer } from "@/context/PlayerContext";
 import { ListIcon as PhMenu, XIcon as PhClose } from "@phosphor-icons/react";
 
-function LogoMark({ live }: { live: boolean }) {
+function Logo({ live }: { live: boolean }) {
   return (
-    <span className="relative flex items-center justify-center w-8 h-8">
-      {live && <span className="absolute inset-0 rounded-full bg-accent/50 animate-ping" />}
-      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true" className="relative">
-        <circle cx="16" cy="16" r="15" fill="var(--accent)" />
-        <circle cx="16" cy="16" r="2.6" fill="#fff" />
-        <path d="M10.8 10.8a7.4 7.4 0 0 0 0 10.4M21.2 10.8a7.4 7.4 0 0 1 0 10.4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M7.4 7.4a12.2 12.2 0 0 0 0 17.2M24.6 7.4a12.2 12.2 0 0 1 0 17.2" stroke="#fff" strokeOpacity="0.55" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
+    <span className="relative flex items-center justify-center w-9 h-9">
+      {live && <span className="absolute inset-1 rounded-full bg-[#ff6a2b]/40 animate-ping" />}
+      <span className="relative">
+        <LogoMark size={34} />
+      </span>
     </span>
   );
 }
@@ -75,7 +73,7 @@ function TopNavContent() {
           href="/"
           className="pointer-events-auto glass-island justify-self-start flex items-center gap-2.5 h-12 pl-2 pr-4 rounded-full"
         >
-          <LogoMark live={isPlaying} />
+          <Logo live={isPlaying} />
           <span className="text-[17px] font-bold tracking-tight text-foreground">Airwave</span>
         </Link>
 
