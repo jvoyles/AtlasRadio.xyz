@@ -7,72 +7,18 @@ import { registerClick } from "@/lib/radioBrowser";
 import { ShareButton } from "./ShareButton";
 import { EqualizerBars } from "./EqualizerBars";
 import { formatElapsed } from "@/lib/format";
+import { CaretDownIcon as PhCollapse, HeartIcon as PhHeart, MusicNotesIcon as PhNote, PauseIcon as PhPause, PlayIcon as PhPlay, RepeatIcon as PhRepeat, ShuffleIcon as PhShuffle, SkipBackIcon as PhBack, SkipForwardIcon as PhForward } from "@phosphor-icons/react";
 
-const PlayIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M8 5v14l11-7z" />
-  </svg>
-);
+const PlayIcon = () => <PhPlay size={26} weight="fill" />;
+const PauseIcon = () => <PhPause size={26} weight="fill" />;
+const RewindIcon = () => <PhBack size={26} weight="fill" />;
+const ForwardIcon = () => <PhForward size={26} weight="fill" />;
+const ShuffleIcon = () => <PhShuffle size={22} weight="bold" />;
+const RepeatIcon = () => <PhRepeat size={22} weight="bold" />;
+const HeartIcon = ({ filled }: { filled: boolean }) => <PhHeart size={24} weight={filled ? "fill" : "bold"} />;
+const CollapseIcon = () => <PhCollapse size={20} weight="bold" />;
+const MiniPlayIcon = () => <PhPlay size={14} weight="fill" />;
 
-const PauseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-  </svg>
-);
-
-const RewindIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M11 12l8-6v12l-8-6z" />
-    <path d="M3 12l8-6v12l-8-6z" />
-  </svg>
-);
-
-const ForwardIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M13 12l-8-6v12l8-6z" />
-    <path d="M21 12l-8-6v12l8-6z" />
-  </svg>
-);
-
-const ShuffleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M3 6h4l10 12h4M3 18h4l4-4.5M17 6h4v4M17 18h4v-4M13 8.5L17 6M13 15.5L17 18" />
-  </svg>
-);
-
-const RepeatIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M17 2l4 4-4 4" />
-    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-    <path d="M7 22l-4-4 4-4" />
-    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-  </svg>
-);
-
-const HeartIcon = ({ filled }: { filled: boolean }) => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill={filled ? "currentColor" : "none"}
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M12 21s-7.5-4.6-10-9.2C.5 8.4 2 4.5 5.8 4c2-.3 3.8.7 5 2.4.9-1.7 2.9-2.7 4.9-2.4 3.8.5 5.3 4.4 3.8 7.8-2.5 4.6-10 9.2-10 9.2z" />
-  </svg>
-);
-
-const CollapseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M6 9l6 6 6-6" />
-  </svg>
-);
-
-const MiniPlayIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M8 5v14l11-7z" />
-  </svg>
-);
 
 export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
   const {
@@ -164,10 +110,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                   onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
                 />
               ) : (
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
-                  <circle cx="12" cy="14" r="4" />
-                  <path d="M4 14a8 8 0 0 1 16 0" />
-                </svg>
+                <PhNote size={56} weight="bold" className="text-muted" />
               )}
             </div>
 
@@ -269,10 +212,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                           onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
                         />
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-muted">
-                          <circle cx="12" cy="14" r="4" />
-                          <path d="M4 14a8 8 0 0 1 16 0" />
-                        </svg>
+                        <PhNote size={18} weight="bold" className="text-ink-muted" />
                       )}
                       <span className="absolute inset-0 flex items-center justify-center bg-ink/40 text-paper opacity-0 group-hover:opacity-100 transition-opacity">
                         <MiniPlayIcon />

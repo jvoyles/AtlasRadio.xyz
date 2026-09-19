@@ -146,7 +146,7 @@ function Browse() {
           ) : results.length === 0 ? (
             <p className="text-muted text-sm">No stations found.</p>
           ) : (
-            <div className="flex flex-col max-w-2xl">
+            <div className="flex flex-col -mx-6 sm:-mx-8">
               {results.map((station, i) => (
                 <SignalRow key={station.stationuuid} index={i} station={station} />
               ))}
@@ -154,7 +154,7 @@ function Browse() {
           )}
         </>
       ) : section === "trending" ? (
-        <div className="flex flex-col max-w-2xl">
+        <div className="flex flex-col -mx-6 sm:-mx-8">
           {trending.map((station, i) => (
             <SignalRow key={station.stationuuid} index={i} station={station} />
           ))}

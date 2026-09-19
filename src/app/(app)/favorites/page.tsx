@@ -19,7 +19,7 @@ export default function FavoritesPage() {
           and tap the heart on a station. Likes are saved in this browser.
         </p>
       ) : (
-        <div className="flex flex-col max-w-2xl">
+        <div className="flex flex-col -mx-6 sm:-mx-8">
           {favorites.map((station, i) => (
             <SignalRow key={station.stationuuid} index={i} station={station} />
           ))}

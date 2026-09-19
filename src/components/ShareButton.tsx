@@ -2,21 +2,11 @@
 
 import { useState } from "react";
 import type { Station } from "@/lib/radioBrowser";
+import { CheckIcon as PhCheck, ShareNetworkIcon as PhShare } from "@phosphor-icons/react";
 
-const ShareIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="18" cy="5" r="3" />
-    <circle cx="6" cy="12" r="3" />
-    <circle cx="18" cy="19" r="3" />
-    <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
-  </svg>
-);
+const ShareIcon = () => <PhShare size={18} weight="bold" />;
+const CheckIcon = () => <PhCheck size={18} weight="bold" />;
 
-const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M20 6L9 17l-5-5" />
-  </svg>
-);
 
 export function ShareButton({
   station,

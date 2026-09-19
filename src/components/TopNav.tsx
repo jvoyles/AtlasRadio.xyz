@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { GlobalSearch } from "./GlobalSearch";
+import { ListIcon as PhMenu, XIcon as PhClose } from "@phosphor-icons/react";
 
 const navItems = [
   { href: "/", section: null, label: "Globe" },
@@ -85,9 +86,7 @@ function TopNavContent() {
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-          </svg>
+          {menuOpen ? <PhClose size={22} weight="bold" /> : <PhMenu size={22} weight="bold" />}
         </button>
       </div>
 
