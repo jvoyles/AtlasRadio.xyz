@@ -18,6 +18,7 @@ type DotOptions = {
   coreColor?: string;
   strokeColor?: string;
   strokeWidth?: number;
+  shadow?: boolean;
   period: number;
   phase: number;
   ringAlpha: number;
@@ -71,7 +72,15 @@ function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8
       ctx.beginPath();
       ctx.arc(c, c, coreR * breathe, 0, Math.PI * 2);
       ctx.fillStyle = opts.coreColor ?? `rgb(${r},${g},${b})`;
+      if (opts.shadow) {
+        ctx.shadowColor = "rgba(0,0,0,0.55)";
+        ctx.shadowBlur = 8 * PIXEL_RATIO;
+        ctx.shadowOffsetY = 1.5 * PIXEL_RATIO;
+      }
       ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
       ctx.lineWidth = (opts.strokeWidth ?? 1.2) * PIXEL_RATIO;
       ctx.strokeStyle = opts.strokeColor ?? "rgba(255,255,255,0.95)";
       ctx.stroke();
@@ -125,11 +134,12 @@ export function registerStationImages(map: MapLibreMap) {
     ACTIVE_DOT_IMAGE,
     createPulsingDot({
       size: 88,
-      core: 9,
+      core: 10,
       color: DOT_RGB,
-      coreColor: "#0a1024",
+      coreColor: "#ffffff",
       strokeColor: DOT_HEX,
-      strokeWidth: 3.5,
+      strokeWidth: 4,
+      shadow: true,
       period: 1.6,
       phase: 0,
       ringAlpha: 0.95,
