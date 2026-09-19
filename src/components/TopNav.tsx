@@ -88,7 +88,7 @@ function TopNavContent() {
           <span
             ref={indicatorRef}
             aria-hidden="true"
-            className="absolute left-0 top-1 bottom-1 rounded-full bg-white/[0.08] transition-[transform,width,opacity] duration-500 ease-[cubic-bezier(0.34,1.4,0.64,1)]"
+            className="absolute left-0 top-1 bottom-1 rounded-full bg-white/[0.08] transition-[transform,width,opacity] duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
             style={{ opacity: 0 }}
           >
             <span
