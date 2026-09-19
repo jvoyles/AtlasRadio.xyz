@@ -16,6 +16,7 @@ type DotOptions = {
   period: number;
   phase: number;
   ringAlpha: number;
+  rings?: number;
 };
 
 function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8ClampedArray } {
@@ -41,13 +42,17 @@ function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8
       const maxR = c - 1;
       ctx.clearRect(0, 0, px, px);
 
-      const ringR = coreR + (maxR - coreR) * (1 - Math.pow(1 - t, 2.2));
-      const ringA = Math.pow(1 - t, 1.6) * opts.ringAlpha;
-      ctx.beginPath();
-      ctx.arc(c, c, ringR, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${r},${g},${b},${ringA})`;
-      ctx.lineWidth = 2 * PIXEL_RATIO * (1 - t * 0.6);
-      ctx.stroke();
+      const ringCount = opts.rings ?? 1;
+      for (let k = 0; k < ringCount; k++) {
+        const rt = (t + k / ringCount) % 1;
+        const ringR = coreR + (maxR - coreR) * (1 - Math.pow(1 - rt, 2.2));
+        const ringA = Math.pow(1 - rt, 1.6) * opts.ringAlpha;
+        ctx.beginPath();
+        ctx.arc(c, c, ringR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${r},${g},${b},${ringA})`;
+        ctx.lineWidth = 2 * PIXEL_RATIO * (1 - rt * 0.6);
+        ctx.stroke();
+      }
 
       const glow = ctx.createRadialGradient(c, c, coreR * 0.4, c, c, coreR * 2.2);
       glow.addColorStop(0, `rgba(${r},${g},${b},0.4)`);
@@ -103,7 +108,7 @@ export function registerStationImages(map: MapLibreMap) {
       createPulsingDot({
         size: 40,
         core: 3.6,
-        color: [255, 184, 64],
+        color: [255, 61, 154],
         period: 2.6,
         phase: i / DOT_VARIANTS,
         ringAlpha: 0.7,
@@ -114,13 +119,13 @@ export function registerStationImages(map: MapLibreMap) {
   map.addImage(
     ACTIVE_DOT_IMAGE,
     createPulsingDot({
-      size: 64,
-      core: 6,
-      color: [255, 90, 106],
-      coreColor: "#ffffff",
-      period: 1.5,
+      size: 88,
+      core: 9,
+      color: [255, 40, 40],
+      period: 1.6,
       phase: 0,
-      ringAlpha: 0.9,
+      ringAlpha: 0.95,
+      rings: 2,
     }),
     { pixelRatio: PIXEL_RATIO }
   );
