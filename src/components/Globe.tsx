@@ -6,6 +6,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { Station } from "@/lib/radioBrowser";
 import {
   ACTIVE_DOT_IMAGE,
+  DOT_HEX,
+  DOT_RGB,
   HOVER_RING_IMAGE,
   buildStationTooltip,
   dotVariant,
@@ -188,8 +190,8 @@ export function Globe({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: window.innerWidth < 768 ? 20 : 26,
-        clusterMaxZoom: 6,
+        clusterRadius: window.innerWidth < 768 ? 48 : 64,
+        clusterMaxZoom: 7,
       });
       map.addLayer({
         id: "clusters-layer",
@@ -197,13 +199,13 @@ export function Globe({
         source: "stations",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "#ff3d9a",
-          "circle-opacity": 0.85,
+          "circle-color": DOT_HEX,
+          "circle-opacity": 0.92,
           "circle-radius": window.innerWidth < 768
-            ? ["step", ["get", "point_count"], 9, 10, 11, 50, 14, 200, 18]
-            : ["step", ["get", "point_count"], 11, 10, 14, 50, 18, 200, 23],
-          "circle-stroke-width": 3,
-          "circle-stroke-color": "rgba(255, 61, 154, 0.35)",
+            ? ["step", ["get", "point_count"], 10, 10, 13, 100, 17, 1000, 22]
+            : ["step", ["get", "point_count"], 12, 10, 16, 100, 21, 1000, 27],
+          "circle-stroke-width": 5,
+          "circle-stroke-color": `rgba(${DOT_RGB.join(",")},0.28)`,
         },
       });
       map.addLayer({
@@ -214,7 +216,7 @@ export function Globe({
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
           "text-font": ["Noto Sans Bold"],
-          "text-size": window.innerWidth < 768 ? 10 : 11,
+          "text-size": window.innerWidth < 768 ? 11 : 12,
           "text-allow-overlap": true,
         },
         paint: { "text-color": "#ffffff" },

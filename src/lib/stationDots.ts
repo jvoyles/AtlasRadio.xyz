@@ -8,6 +8,9 @@ import type { Station } from "@/lib/radioBrowser";
 
 const PIXEL_RATIO = 2;
 
+export const DOT_RGB: [number, number, number] = [139, 108, 255];
+export const DOT_HEX = "#8b6cff";
+
 type DotOptions = {
   size: number;
   core: number;
@@ -108,7 +111,7 @@ export function registerStationImages(map: MapLibreMap) {
       createPulsingDot({
         size: 40,
         core: 3.6,
-        color: [255, 61, 154],
+        color: DOT_RGB,
         period: 2.6,
         phase: i / DOT_VARIANTS,
         ringAlpha: 0.7,
