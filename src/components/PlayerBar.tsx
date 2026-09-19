@@ -14,7 +14,7 @@ const RewindIcon = () => <PhBack size={20} weight="fill" />;
 const ForwardIcon = () => <PhForward size={20} weight="fill" />;
 const ShuffleIcon = () => <PhShuffle size={18} weight="bold" />;
 const RepeatIcon = () => <PhRepeat size={18} weight="bold" />;
-const HeartIcon = ({ filled }: { filled: boolean }) => <PhHeart size={20} weight={filled ? "fill" : "bold"} />;
+const HeartIcon = ({ filled }: { filled: boolean }) => <PhHeart size={17} weight={filled ? "fill" : "bold"} />;
 const ExpandIcon = () => <PhExpand size={18} weight="bold" />;
 
 
@@ -81,21 +81,31 @@ export function PlayerBar() {
             )}
             {live && <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-accent pulse-glow" />}
           </button>
-          <button
-            onClick={() => setExpanded(true)}
-            className="min-w-0 flex-1 text-left sm:flex-none"
-            aria-label="Expand now playing"
-          >
-            <p className="text-sm font-medium font-serif truncate">{current.name}</p>
-            <p className="text-[12px] text-ink-muted truncate">{current.country || current.tags}</p>
-          </button>
-          <button
-            onClick={handleFavorite}
-            className={`shrink-0 ${favorited ? "text-accent" : "text-ink-muted hover:text-ink"}`}
-            aria-label="Toggle favorite"
-          >
-            <HeartIcon filled={favorited} />
-          </button>
+          <div className="min-w-0 flex-1 sm:flex-none">
+            <div className="flex items-center gap-2 min-w-0">
+              <button
+                onClick={() => setExpanded(true)}
+                className="min-w-0 text-left text-sm font-medium font-serif truncate"
+                aria-label="Expand now playing"
+              >
+                {current.name}
+              </button>
+              <button
+                onClick={handleFavorite}
+                className={`shrink-0 ${favorited ? "text-accent" : "text-ink-muted hover:text-ink"}`}
+                aria-label="Toggle favorite"
+              >
+                <HeartIcon filled={favorited} />
+              </button>
+            </div>
+            <button
+              onClick={() => setExpanded(true)}
+              className="block max-w-full text-left text-[12px] text-ink-muted truncate"
+              tabIndex={-1}
+            >
+              {current.country || current.tags}
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col items-center gap-1.5">
