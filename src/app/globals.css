@@ -221,6 +221,11 @@ body {
 .station-tooltip.maplibregl-popup {
   pointer-events: none;
 }
+@media (hover: none) {
+  .station-tooltip.maplibregl-popup {
+    pointer-events: auto;
+  }
+}
 .station-tooltip .maplibregl-popup-content {
   background: rgba(10, 14, 23, 0.94);
   color: var(--ink);

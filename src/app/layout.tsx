@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 
@@ -16,6 +16,11 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Airwave — Internet Radio",
   description: "Browse and stream internet radio stations from around the world.",
+};
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: "#0a0e17",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

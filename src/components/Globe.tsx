@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Map as MapLibreMap, Popup, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
+import { AttributionControl, Map as MapLibreMap, Popup, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Station } from "@/lib/radioBrowser";
 import {
@@ -47,8 +47,7 @@ function spawnComet(width: number, height: number): Comet {
 }
 
 function initialZoom() {
-  const side = Math.min(window.innerWidth, window.innerHeight);
-  return side >= 768 ? 1.5 : (side / 768) * 1.1;
+  return Math.min(window.innerWidth, window.innerHeight) >= 768 ? 1.5 : 1.0;
 }
 
 export function Globe({
@@ -143,13 +142,21 @@ export function Globe({
       minZoom: 0.8,
       maxZoom: 10,
       maxPitch: 85,
-      attributionControl: { compact: true },
+      attributionControl: false,
     });
     mapRef.current = map;
+    // Top-right: the player dock covers the bottom edge whenever a station is playing.
+    map.addControl(new AttributionControl({ compact: true }), "top-right");
+
     map.dragRotate.enable();
     map.touchZoomRotate.enableRotation();
 
     map.on("load", () => {
+      if (window.innerWidth < 768) {
+        const attribution = map.getContainer().querySelector(".maplibregl-ctrl-attrib");
+        attribution?.classList.remove("maplibregl-compact-show");
+        attribution?.removeAttribute("open");
+      }
       map.setProjection({ type: "globe" });
       map.once("render", () => {
         if (mapContainerRef.current) mapContainerRef.current.style.opacity = "1";
@@ -179,7 +186,7 @@ export function Globe({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: 26,
+        clusterRadius: window.innerWidth < 768 ? 20 : 26,
         clusterMaxZoom: 6,
       });
       map.addLayer({
@@ -190,7 +197,9 @@ export function Globe({
         paint: {
           "circle-color": "#ff3d9a",
           "circle-opacity": 0.85,
-          "circle-radius": ["step", ["get", "point_count"], 11, 10, 14, 50, 18, 200, 23],
+          "circle-radius": window.innerWidth < 768
+            ? ["step", ["get", "point_count"], 9, 10, 11, 50, 14, 200, 18]
+            : ["step", ["get", "point_count"], 11, 10, 14, 50, 18, 200, 23],
           "circle-stroke-width": 3,
           "circle-stroke-color": "rgba(255, 61, 154, 0.35)",
         },
@@ -203,7 +212,7 @@ export function Globe({
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
           "text-font": ["Noto Sans Bold"],
-          "text-size": 11,
+          "text-size": window.innerWidth < 768 ? 10 : 11,
           "text-allow-overlap": true,
         },
         paint: { "text-color": "#ffffff" },
@@ -231,12 +240,6 @@ export function Globe({
         layout: { "icon-image": ACTIVE_DOT_IMAGE, "icon-allow-overlap": true, "icon-ignore-placement": true },
       });
 
-      map.on("click", "stations-layer", (e: MapLayerMouseEvent) => {
-        const id = e.features?.[0]?.properties?.id;
-        const station = stationsRef.current.find((s) => s.stationuuid === id);
-        if (station) onSelectRef.current(station);
-      });
-
       map.on("click", "clusters-layer", async (e: MapLayerMouseEvent) => {
         const feature = e.features?.[0];
         if (!feature) return;
@@ -257,10 +260,13 @@ export function Globe({
         closeButton: false,
         closeOnClick: false,
         closeOnMove: false,
-        anchor: "bottom",
         offset: 16,
         maxWidth: "260px",
       });
+      // Touch screens have no hover, so the first tap previews a station in
+      // the tooltip (tapping the tooltip or the dot again tunes in) instead
+      // of starting playback blind.
+      const touch = window.matchMedia("(hover: none)").matches;
       let hoveredId: string | null = null;
       const setHovered = (station: Station | null) => {
         const hoveredSource = map.getSource("hovered-station") as GeoJSONSource | undefined;
@@ -275,12 +281,36 @@ export function Globe({
         hoveredId = station.stationuuid;
         hovering = true;
         const lngLat: [number, number] = [station.geo_long, station.geo_lat];
-        tooltip.setLngLat(lngLat).setDOMContent(buildStationTooltip(station)).addTo(map);
+        tooltip
+          .setLngLat(lngLat)
+          .setDOMContent(buildStationTooltip(station, touch
+              ? () => {
+                  onSelectRef.current(station);
+                  setHovered(null);
+                }
+              : undefined))
+          .addTo(map);
         hoveredSource?.setData({
           type: "FeatureCollection",
           features: [{ type: "Feature", geometry: { type: "Point", coordinates: lngLat }, properties: {} }],
         });
       };
+      map.on("click", "stations-layer", (e: MapLayerMouseEvent) => {
+        const id = e.features?.[0]?.properties?.id;
+        const station = stationsRef.current.find((s) => s.stationuuid === id);
+        if (!station) return;
+        if (touch && hoveredId !== station.stationuuid) {
+          setHovered(station);
+          return;
+        }
+        onSelectRef.current(station);
+        if (touch) setHovered(null);
+      });
+      map.on("click", (e) => {
+        if (!touch) return;
+        const hit = map.queryRenderedFeatures(e.point, { layers: ["stations-layer", "clusters-layer"] });
+        if (hit.length === 0) setHovered(null);
+      });
       map.on("mousemove", "stations-layer", (e: MapLayerMouseEvent) => {
         map.getCanvas().style.cursor = "pointer";
         const id = e.features?.[0]?.properties?.id;
@@ -378,7 +408,7 @@ export function Globe({
   }, [stations, currentId]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full cursor-grab active:cursor-grabbing">
+    <div ref={containerRef} className="relative w-full h-full cursor-grab active:cursor-grabbing touch-none">
       <div
         className="absolute inset-0"
         style={{ background: "radial-gradient(ellipse at center, #0C1B33 0%, #081222 100%)" }}

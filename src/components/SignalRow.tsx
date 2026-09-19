@@ -98,8 +98,8 @@ export function SignalRow({ index, station }: { index?: number; station: Station
 
       <button
         onClick={handleFavorite}
-        className={`shrink-0 transition-opacity ${
-          favorited ? "text-accent opacity-100" : "text-muted hover:text-foreground opacity-0 group-hover:opacity-100"
+        className={`shrink-0 p-1.5 -mr-1.5 transition-opacity ${
+          favorited ? "text-accent opacity-100" : "text-muted hover:text-foreground opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
         }`}
         aria-label="Toggle favorite"
       >

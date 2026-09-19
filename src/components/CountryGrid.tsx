@@ -24,7 +24,7 @@ function CountryCard({ country, onClick }: { country: Country; onClick: () => vo
         style={{ background: accent, boxShadow: `0 0 12px 0 ${accent}` }}
       />
       <span className="text-2xl leading-none">{countryFlag(country.iso_3166_1)}</span>
-      <p className="mt-3 text-sm font-semibold font-serif text-foreground truncate">{country.name}</p>
+      <p className="mt-3 text-sm font-semibold font-serif text-foreground line-clamp-2 leading-snug min-h-[2.5em]">{country.name}</p>
       <p className="text-xs text-muted tabular-nums mt-0.5">
         {country.stationcount.toLocaleString()} stations
       </p>

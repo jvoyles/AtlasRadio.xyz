@@ -140,7 +140,7 @@ export function dotVariant(uuid: string) {
 
 // Built with DOM nodes + textContent rather than an HTML string: station
 // names and tags come from a public, user-contributed directory.
-export function buildStationTooltip(station: Station): HTMLElement {
+export function buildStationTooltip(station: Station, onTap?: () => void): HTMLElement {
   const root = document.createElement("div");
   root.className = "station-tooltip-body";
 
@@ -199,9 +199,13 @@ export function buildStationTooltip(station: Station): HTMLElement {
   stat.textContent = clicks > 0 ? `${clicks.toLocaleString()} listens` : "Live";
   const cta = document.createElement("span");
   cta.className = "station-tooltip-cta";
-  cta.textContent = "Click to tune in";
+  cta.textContent = onTap ? "Tap to tune in" : "Click to tune in";
   foot.append(stat, cta);
   root.appendChild(foot);
 
+  if (onTap) {
+    root.style.cursor = "pointer";
+    root.addEventListener("click", onTap);
+  }
   return root;
 }

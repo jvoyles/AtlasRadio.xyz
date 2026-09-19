@@ -100,7 +100,7 @@ export function PlayerBar() {
     <>
       {expanded && <NowPlayingOverlay onClose={() => setExpanded(false)} />}
 
-      <footer className="fixed bottom-4 left-4 right-4 z-30 paper-card rounded-2xl px-4 sm:px-5 py-3 grid grid-cols-2 sm:grid-cols-3 items-center gap-3 sm:gap-4">
+      <footer className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-30 paper-card rounded-2xl px-3 sm:px-5 py-2.5 sm:py-3 grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-3 items-center gap-3 sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => setExpanded(true)}
@@ -122,10 +122,14 @@ export function PlayerBar() {
             )}
             {live && <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-accent pulse-glow" />}
           </button>
-          <div className="min-w-0 hidden sm:block">
+          <button
+            onClick={() => setExpanded(true)}
+            className="min-w-0 flex-1 text-left sm:flex-none"
+            aria-label="Expand now playing"
+          >
             <p className="text-sm font-medium font-serif truncate">{current.name}</p>
             <p className="text-[12px] text-ink-muted truncate">{current.country || current.tags}</p>
-          </div>
+          </button>
           <button
             onClick={handleFavorite}
             className={`shrink-0 ${favorited ? "text-accent" : "text-ink-muted hover:text-ink"}`}
@@ -136,7 +140,7 @@ export function PlayerBar() {
         </div>
 
         <div className="flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-4 sm:gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             <button
               onClick={shuffle}
               className="hidden sm:block text-ink-muted hover:text-ink transition-colors"
@@ -154,7 +158,7 @@ export function PlayerBar() {
             </button>
             <button
               onClick={toggle}
-              className="w-9 h-9 rounded-full bg-accent text-paper flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+              className="w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-accent text-paper flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isLoading ? (

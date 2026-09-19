@@ -138,25 +138,31 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
 
       <button
         onClick={handleClose}
-        className="absolute top-6 left-1/2 -translate-x-1/2 z-10 paper-card rounded-full w-9 h-9 flex items-center justify-center text-ink-muted hover:text-ink"
+        className="absolute top-[max(1.25rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-20 paper-card rounded-full w-9 h-9 flex items-center justify-center text-ink-muted hover:text-ink"
         aria-label="Close now playing"
       >
         <CollapseIcon />
       </button>
-      <div className="absolute top-6 right-6 z-10 paper-card rounded-full w-9 h-9 flex items-center justify-center">
+      <div className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-5 z-20 paper-card rounded-full w-9 h-9 flex items-center justify-center">
         <ShareButton station={current} idleClassName="text-ink-muted hover:text-ink" />
       </div>
 
-      <div className="relative z-10 h-full overflow-y-auto flex items-center justify-center px-8 py-16">
+      <div className="relative z-10 h-full overflow-y-auto overscroll-contain">
+      <div className="min-h-full flex items-center justify-center px-6 sm:px-8 pt-20 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
         <div
-          className={`flex flex-col lg:flex-row items-center lg:items-start gap-12 max-w-4xl w-full transition-transform duration-200 ${
+          className={`flex flex-col lg:flex-row items-center lg:items-start gap-8 sm:gap-12 max-w-4xl w-full transition-transform duration-200 ${
             visible ? "scale-100" : "scale-95"
           }`}
         >
-          <div className="flex flex-col items-center gap-8 max-w-sm w-full shrink-0">
-            <div className="w-64 h-64 rounded-lg overflow-hidden bg-surface-elevated shadow-2xl flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6 sm:gap-8 max-w-sm w-full shrink-0">
+            <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-lg overflow-hidden bg-surface-elevated shadow-2xl flex items-center justify-center">
               {current.favicon ? (
-                <img src={current.favicon} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={current.favicon}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
+                />
               ) : (
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted">
                   <circle cx="12" cy="14" r="4" />
@@ -256,7 +262,12 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                   >
                     <span className="relative w-10 h-10 rounded-md overflow-hidden bg-paper-elevated shrink-0 flex items-center justify-center">
                       {station.favicon ? (
-                        <img src={station.favicon} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={station.favicon}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
+                        />
                       ) : (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-muted">
                           <circle cx="12" cy="14" r="4" />
@@ -277,6 +288,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
