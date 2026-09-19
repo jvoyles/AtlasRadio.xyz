@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   searchStations,
   loadAllGeoStations,
   topStations,
   registerClick,
+  stationByUuid,
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
@@ -55,6 +56,22 @@ function Browse() {
       active = false;
     };
   }, [query]);
+
+  // Shared links (/?station=<uuid>) cue that station: the player loads it and
+  // the globe glides there. Browsers block autoplay without a click, so the
+  // listener may still need to press play.
+  const sharedId = searchParams.get("station");
+  const openedShared = useRef<string | null>(null);
+  useEffect(() => {
+    if (!sharedId || openedShared.current === sharedId) return;
+    openedShared.current = sharedId;
+    stationByUuid(sharedId)
+      .then((station) => {
+        if (station) play(station);
+      })
+      .catch(() => {})
+      .finally(() => router.replace("/"));
+  }, [sharedId, play, router]);
 
   const handlePlay = (station: Station) => {
     registerClick(station.stationuuid).catch(() => {});

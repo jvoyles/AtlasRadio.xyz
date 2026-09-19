@@ -63,6 +63,13 @@ export function topStations(limit = 40) {
   });
 }
 
+/** Look up one station by its Radio Browser uuid (used by shared links). */
+export async function stationByUuid(uuid: string) {
+  if (!/^[0-9a-f-]{36}$/i.test(uuid)) return null;
+  const [station] = await apiFetch<Station[]>(`/json/stations/byuuid/${uuid}`);
+  return station ?? null;
+}
+
 export function registerClick(stationuuid: string) {
   return apiFetch(`/json/url/${stationuuid}`);
 }

@@ -90,7 +90,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
         <CollapseIcon />
       </button>
       <div className="absolute top-[max(1.25rem,env(safe-area-inset-top))] right-5 z-20 paper-card rounded-full w-9 h-9 flex items-center justify-center">
-        <ShareButton station={current} idleClassName="text-ink-muted hover:text-ink" />
+        <ShareButton station={current} idleClassName="text-ink-muted hover:text-ink" placement="bottom" />
       </div>
 
       <div className="relative z-10 h-full overflow-y-auto overscroll-contain">
