@@ -73,7 +73,7 @@ function Browse() {
   const stations = query ? resultSet.stations : trending;
 
   return (
-    <div className="px-6 sm:px-8 pt-8 pb-32">
+    <div className="px-6 sm:px-8 pt-24 pb-32">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">{query ? `Results for “${query}”` : "Trending"}</h1>
         {query && (

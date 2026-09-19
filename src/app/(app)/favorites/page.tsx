@@ -8,7 +8,7 @@ export default function FavoritesPage() {
   const { favorites } = useFavorites();
 
   return (
-    <div className="px-6 sm:px-8 pt-8 pb-32">
+    <div className="px-6 sm:px-8 pt-24 pb-32">
       <h1 className="text-2xl font-bold mb-6">Liked stations</h1>
       {favorites.length === 0 ? (
         <p className="text-muted text-sm">
