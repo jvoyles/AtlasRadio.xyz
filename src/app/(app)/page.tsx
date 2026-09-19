@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   listCountries,
   searchStations,
-  stationsWithGeo,
+  loadAllGeoStations,
   topStations,
   registerClick,
   type Station,
@@ -62,7 +62,9 @@ function Browse() {
   useEffect(() => {
     topStations(24).then(setTrending).catch(() => setTrending([]));
     listCountries(80).then(setCountries).catch(() => setCountries([]));
-    stationsWithGeo(700).then(setGeoStations).catch(() => setGeoStations([]));
+    const controller = new AbortController();
+    loadAllGeoStations(setGeoStations, controller.signal).catch(() => {});
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {

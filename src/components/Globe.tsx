@@ -178,11 +178,41 @@ export function Globe({
       map.addSource("stations", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
+        cluster: true,
+        clusterRadius: 26,
+        clusterMaxZoom: 6,
+      });
+      map.addLayer({
+        id: "clusters-layer",
+        type: "circle",
+        source: "stations",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#ff3d9a",
+          "circle-opacity": 0.85,
+          "circle-radius": ["step", ["get", "point_count"], 11, 10, 14, 50, 18, 200, 23],
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "rgba(255, 61, 154, 0.35)",
+        },
+      });
+      map.addLayer({
+        id: "cluster-count-layer",
+        type: "symbol",
+        source: "stations",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-font": ["Noto Sans Bold"],
+          "text-size": 11,
+          "text-allow-overlap": true,
+        },
+        paint: { "text-color": "#ffffff" },
       });
       map.addLayer({
         id: "stations-layer",
         type: "symbol",
         source: "stations",
+        filter: ["!", ["has", "point_count"]],
         layout: {
           "icon-image": ["concat", "station-dot-", ["to-string", ["get", "variant"]]],
           "icon-allow-overlap": true,
@@ -205,6 +235,21 @@ export function Globe({
         const id = e.features?.[0]?.properties?.id;
         const station = stationsRef.current.find((s) => s.stationuuid === id);
         if (station) onSelectRef.current(station);
+      });
+
+      map.on("click", "clusters-layer", async (e: MapLayerMouseEvent) => {
+        const feature = e.features?.[0];
+        if (!feature) return;
+        const source = map.getSource("stations") as GeoJSONSource;
+        const zoom = await source.getClusterExpansionZoom(feature.properties.cluster_id);
+        map.easeTo({ center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom + 0.5, duration: 700 });
+        pauseSpin();
+      });
+      map.on("mouseenter", "clusters-layer", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "clusters-layer", () => {
+        map.getCanvas().style.cursor = "";
       });
 
       const tooltip = new Popup({

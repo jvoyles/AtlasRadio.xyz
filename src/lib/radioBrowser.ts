@@ -49,7 +49,7 @@ export function searchStations(params: {
   order?: string;
 }) {
   return apiFetch<Station[]>("/json/stations/search", {
-    limit: 40,
+    limit: 200,
     order: "clickcount",
     reverse: true,
     hidebroken: true,
@@ -94,13 +94,37 @@ export function registerClick(stationuuid: string) {
   return apiFetch(`/json/url/${stationuuid}`);
 }
 
-/** Stations that carry real geo coordinates, for plotting on the night-sea map. */
-export function stationsWithGeo(limit = 700) {
-  return apiFetch<Station[]>("/json/stations/search", {
-    limit,
-    has_geo_info: true,
-    order: "clickcount",
-    reverse: true,
-    hidebroken: true,
-  });
+let geoCache: Station[] | null = null;
+
+/**
+ * Streams every working station that has coordinates (12k+) from our own
+ * paging route, calling `onUpdate` with the full de-duplicated list as each
+ * batch of pages lands, so the globe can start showing the most-listened
+ * stations immediately. The finished list is kept for the rest of the
+ * session so navigating between sections doesn't re-download it.
+ */
+export async function loadAllGeoStations(onUpdate: (stations: Station[]) => void, signal?: AbortSignal) {
+  if (geoCache) {
+    onUpdate(geoCache);
+    return;
+  }
+  const CONCURRENCY = 3;
+  const seen = new Map<string, Station>();
+  let page = 0;
+  let done = false;
+  while (!done && !signal?.aborted) {
+    const batch = await Promise.all(
+      Array.from({ length: CONCURRENCY }, (_, i) =>
+        fetch(`/api/stations/geo?page=${page + i}`, { signal })
+          .then((r) => (r.ok ? (r.json() as Promise<{ stations: Station[]; done: boolean }>) : { stations: [], done: true }))
+          .catch(() => ({ stations: [] as Station[], done: true }))
+      )
+    );
+    if (signal?.aborted) return;
+    for (const b of batch) for (const st of b.stations) seen.set(st.stationuuid, st);
+    onUpdate([...seen.values()]);
+    done = batch.some((b) => b.done);
+    page += CONCURRENCY;
+  }
+  if (!signal?.aborted && seen.size > 0) geoCache = [...seen.values()];
 }
