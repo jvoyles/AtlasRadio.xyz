@@ -6,7 +6,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { NowPlayingOverlay } from "./NowPlayingOverlay";
 import { ShareButton } from "./ShareButton";
 import { formatElapsed } from "@/lib/format";
-import { ArrowsOutSimpleIcon as PhExpand, HeartIcon as PhHeart, MusicNotesIcon as PhNote, PauseIcon as PhPause, PlayIcon as PhPlay, RepeatIcon as PhRepeat, ShuffleIcon as PhShuffle, SkipBackIcon as PhBack, SkipForwardIcon as PhForward, SpeakerHighIcon as PhVolume } from "@phosphor-icons/react";
+import { ArrowsOutSimpleIcon as PhExpand, HeartIcon as PhHeart, MusicNotesIcon as PhNote, PauseIcon as PhPause, PlayIcon as PhPlay, RepeatIcon as PhRepeat, ShuffleIcon as PhShuffle, SkipBackIcon as PhBack, SkipForwardIcon as PhForward, SpeakerHighIcon as PhVolumeHigh, SpeakerLowIcon as PhVolumeLow, SpeakerXIcon as PhVolumeOff } from "@phosphor-icons/react";
 
 const PlayIcon = () => <PhPlay size={18} weight="fill" />;
 const PauseIcon = () => <PhPause size={18} weight="fill" />;
@@ -37,6 +37,17 @@ export function PlayerBar() {
   } = usePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [expanded, setExpanded] = useState(false);
+  const [volumeBeforeMute, setVolumeBeforeMute] = useState(0.8);
+
+  const VolumeIcon = volume === 0 ? PhVolumeOff : volume < 0.5 ? PhVolumeLow : PhVolumeHigh;
+  const toggleMute = () => {
+    if (volume === 0) {
+      setVolume(volumeBeforeMute);
+    } else {
+      setVolumeBeforeMute(volume);
+      setVolume(0);
+    }
+  };
 
   const favorited = current ? isFavorite(current.stationuuid) : false;
   const live = isPlaying && !isLoading;
@@ -147,7 +158,13 @@ export function PlayerBar() {
 
         <div className="hidden sm:flex items-center gap-3 justify-end">
           <ShareButton station={current} idleClassName="text-ink-muted hover:text-ink" />
-          <PhVolume size={18} weight="bold" className="text-ink-muted shrink-0" />
+          <button
+            onClick={toggleMute}
+            className="shrink-0 text-ink-muted hover:text-ink transition-colors"
+            aria-label={volume === 0 ? "Unmute" : "Mute"}
+          >
+            <VolumeIcon size={18} weight="bold" />
+          </button>
           <input
             type="range"
             min={0}
