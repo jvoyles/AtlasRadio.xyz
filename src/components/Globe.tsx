@@ -24,23 +24,30 @@ maplibreConfig.WORKER_URL = "/maplibre-gl-worker.mjs";
 
 const SPIN_DEGREES_PER_SEC = 4;
 
-function drawStarfield(canvas: HTMLCanvasElement, width: number, height: number) {
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
-  const hash = (seed: number) => {
-    const h = Math.sin(seed * 12.9898) * 43758.5453;
-    return h - Math.floor(h);
+type Star = { x: number; y: number; r: number; base: number; phase: number; speed: number };
+type Comet = { x: number; y: number; angle: number; speed: number; len: number; life: number; maxLife: number };
+
+function makeStars(width: number, height: number): Star[] {
+  return Array.from({ length: 700 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    r: 0.4 + Math.random() * 1.1,
+    base: 0.25 + Math.random() * 0.55,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.4 + Math.random() * 1.6,
+  }));
+}
+
+function spawnComet(width: number, height: number): Comet {
+  return {
+    x: Math.random() * width,
+    y: Math.random() * height * 0.6,
+    angle: Math.random() * Math.PI * 2,
+    speed: 8 * Math.random() + 6,
+    len: 200 * Math.random() + 150,
+    life: 0,
+    maxLife: 80 + 40 * Math.random(),
   };
-  for (let i = 0; i < 700; i++) {
-    const x = hash(i * 3.1 + 1) * width;
-    const y = hash(i * 5.3 + 2) * height;
-    const r = 0.4 + hash(i * 7.1 + 3) * 1.1;
-    ctx.fillStyle = `rgba(255,255,255,${0.25 + hash(i * 2.2) * 0.55})`;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 export function Globe({
@@ -69,13 +76,91 @@ export function Globe({
 
   useEffect(() => {
     const container = containerRef.current;
-    const starCanvas = starCanvasRef.current;
-    if (!container || !starCanvas) return;
-    const draw = () => drawStarfield(starCanvas, container.clientWidth, container.clientHeight);
-    draw();
-    const resizeObserver = new ResizeObserver(draw);
+    const canvas = starCanvasRef.current;
+    if (!container || !canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let width = 0;
+    let height = 0;
+    let stars: Star[] = [];
+    const comets: Comet[] = [];
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      stars = makeStars(width, height);
+    };
+
+    const render = (time: number, frames: number) => {
+      ctx.clearRect(0, 0, width, height);
+      for (const star of stars) {
+        const twinkle = reduceMotion ? 1 : 0.65 + 0.35 * Math.sin(time * 0.001 * star.speed + star.phase);
+        ctx.fillStyle = `rgba(255,255,255,${star.base * twinkle})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (reduceMotion) return;
+
+      if (Math.random() > 1 - 0.001 * frames && comets.length < 1) comets.push(spawnComet(width, height));
+      for (let i = comets.length - 1; i >= 0; i--) {
+        const c = comets[i];
+        c.life += frames;
+        c.x += Math.cos(c.angle) * c.speed * frames;
+        c.y += Math.sin(c.angle) * c.speed * frames;
+        if (c.life >= c.maxLife) {
+          comets.splice(i, 1);
+          continue;
+        }
+        const alpha = Math.sin((c.life / c.maxLife) * Math.PI);
+        const tailX = c.x - Math.cos(c.angle) * c.len;
+        const tailY = c.y - Math.sin(c.angle) * c.len;
+        const tail = ctx.createLinearGradient(c.x, c.y, tailX, tailY);
+        tail.addColorStop(0, `rgba(255,255,255,${0.8 * alpha})`);
+        tail.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.strokeStyle = tail;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(c.x, c.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+        ctx.fillStyle = `rgba(200,220,255,${0.5 * alpha})`;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    resize();
+    const resizeObserver = new ResizeObserver(() => {
+      resize();
+      if (reduceMotion) render(0, 0);
+    });
     resizeObserver.observe(container);
-    return () => resizeObserver.disconnect();
+
+    let frame = 0;
+    let last = performance.now();
+    if (reduceMotion) {
+      render(0, 0);
+    } else {
+      const loop = (now: number) => {
+        frame = requestAnimationFrame(loop);
+        const frames = Math.min((now - last) / (1000 / 60), 4);
+        last = now;
+        render(now, frames);
+      };
+      frame = requestAnimationFrame(loop);
+    }
+
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -236,7 +321,7 @@ export function Globe({
     <div ref={containerRef} className="relative w-full h-full cursor-grab active:cursor-grabbing">
       <div
         className="absolute inset-0"
-        style={{ background: "radial-gradient(rgb(12,27,51) 0%, rgb(8,18,34) 100%)" }}
+        style={{ background: "radial-gradient(ellipse at center, #0C1B33 0%, #081222 100%)" }}
       />
       <canvas ref={starCanvasRef} className="absolute inset-0 pointer-events-none" />
       {/* Inline style, not a Tailwind class: maplibre-gl.css sets
