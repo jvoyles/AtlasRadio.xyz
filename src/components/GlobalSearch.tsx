@@ -185,7 +185,7 @@ function GlobalSearchContent({ className }: { className: string }) {
           {!hasQuery ? (
             <div className="p-4">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-muted mb-3">Try searching for</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {SUGGESTIONS.map((s) => (
                   <button
                     key={s}
@@ -193,7 +193,7 @@ function GlobalSearchContent({ className }: { className: string }) {
                       setValue(s);
                       inputRef.current?.focus();
                     }}
-                    className="px-3 py-1.5 rounded-full text-[13px] bg-white/[0.07] text-ink hover:bg-accent hover:text-white transition-colors"
+                    className="px-3 py-2 rounded-full text-[13px] text-center bg-white/[0.07] text-ink hover:bg-accent hover:text-white transition-colors truncate"
                   >
                     {s}
                   </button>
