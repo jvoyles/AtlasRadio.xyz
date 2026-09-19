@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { GlobalSearch } from "./GlobalSearch";
 import { usePlayer } from "@/context/PlayerContext";
-import { DOT_HEX } from "@/lib/stationDots";
 import { ListIcon as PhMenu, XIcon as PhClose } from "@phosphor-icons/react";
 
 function LogoMark({ live }: { live: boolean }) {
@@ -30,8 +29,8 @@ export function TopNav() {
   );
 }
 
-// Three floating glass islands over the globe, all 48px tall. A glowing
-// needle slides to the active section, and the logo orb pings while a
+// Three floating glass islands over the globe, all 48px tall. A soft
+// highlight slides to the active section, and the logo orb pings while a
 // station is playing.
 function TopNavContent() {
   const pathname = usePathname();
@@ -90,12 +89,7 @@ function TopNavContent() {
             aria-hidden="true"
             className="absolute left-0 top-1 bottom-1 rounded-full bg-white/[0.08] transition-[transform,width,opacity] duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
             style={{ opacity: 0 }}
-          >
-            <span
-              className="absolute left-1/2 -translate-x-1/2 -bottom-px w-6 h-[3px] rounded-full"
-              style={{ background: DOT_HEX, boxShadow: `0 0 12px 2px ${DOT_HEX}` }}
-            />
-          </span>
+          />
           {items.map((item) => (
             <Link
               key={item.label}

@@ -156,11 +156,9 @@ export function Globe({
     map.touchZoomRotate.enableRotation();
 
     map.on("load", () => {
-      if (window.innerWidth < 768) {
-        const attribution = map.getContainer().querySelector(".maplibregl-ctrl-attrib");
-        attribution?.classList.remove("maplibregl-compact-show");
-        attribution?.removeAttribute("open");
-      }
+      const attribution = map.getContainer().querySelector(".maplibregl-ctrl-attrib");
+      attribution?.classList.remove("maplibregl-compact-show");
+      attribution?.removeAttribute("open");
       map.setProjection({ type: "globe" });
       map.once("render", () => {
         if (mapContainerRef.current) mapContainerRef.current.style.opacity = "1";
