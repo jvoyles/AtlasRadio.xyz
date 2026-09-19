@@ -63,33 +63,6 @@ export function topStations(limit = 40) {
   });
 }
 
-/** Stations whose listing was most recently added or updated on Radio Browser. */
-export function recentlyAdded(limit = 20) {
-  return apiFetch<Station[]>("/json/stations/lastchange", {
-    limit,
-    hidebroken: true,
-  });
-}
-
-export function listTags(limit = 60) {
-  return apiFetch<{ name: string; stationcount: number }[]>("/json/tags", {
-    limit,
-    order: "stationcount",
-    reverse: true,
-  });
-}
-
-export function listCountries(limit = 60) {
-  return apiFetch<{ name: string; stationcount: number; iso_3166_1: string }[]>(
-    "/json/countries",
-    {
-      limit,
-      order: "stationcount",
-      reverse: true,
-    }
-  );
-}
-
 export function registerClick(stationuuid: string) {
   return apiFetch(`/json/url/${stationuuid}`);
 }

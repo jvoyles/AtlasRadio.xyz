@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  listCountries,
   searchStations,
   loadAllGeoStations,
   topStations,
@@ -11,14 +10,8 @@ import {
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
-import { GenreTile } from "@/components/GenreTile";
-import { CountryGrid } from "@/components/CountryGrid";
 import { Globe } from "@/components/Globe";
 import { usePlayer } from "@/context/PlayerContext";
-import { useGenres } from "@/hooks/useGenres";
-
-type Section = "home" | "trending" | "genres" | "countries";
-type Country = { name: string; stationcount: number; iso_3166_1: string };
 
 export default function BrowsePage() {
   return (
@@ -30,11 +23,7 @@ export default function BrowsePage() {
 
 function BrowseWithKey() {
   const searchParams = useSearchParams();
-  return (
-    <Browse
-      key={`${searchParams.get("genre")}:${searchParams.get("section")}:${searchParams.get("country")}`}
-    />
-  );
+  return <Browse key={`${searchParams.get("section")}:${searchParams.get("q")}`} />;
 }
 
 function Browse() {
@@ -42,83 +31,37 @@ function Browse() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialSection: Section = searchParams.get("genre")
-    ? "genres"
-    : (searchParams.get("section") as Section | null) ?? "home";
-  const [section, setSection] = useState<Section>(initialSection);
-  const query = searchParams.get("q") ?? "";
-  const [genre, setGenre] = useState<string | null>(searchParams.get("genre"));
-  const [country, setCountry] = useState<string | null>(searchParams.get("country"));
+  const showTrending = searchParams.get("section") === "trending";
+  const query = (searchParams.get("q") ?? "").trim();
 
   const [trending, setTrending] = useState<Station[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
   const [geoStations, setGeoStations] = useState<Station[]>([]);
-  const [results, setResults] = useState<Station[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { genres, loading: genresLoading } = useGenres();
-
-  const drilled = Boolean(query.trim() || genre || country);
+  const [resultSet, setResultSet] = useState<{ query: string; stations: Station[] }>({ query: "", stations: [] });
 
   useEffect(() => {
-    topStations(24).then(setTrending).catch(() => setTrending([]));
-    listCountries(80).then(setCountries).catch(() => setCountries([]));
+    topStations(50).then(setTrending).catch(() => setTrending([]));
     const controller = new AbortController();
     loadAllGeoStations(setGeoStations, controller.signal).catch(() => {});
     return () => controller.abort();
   }, []);
 
   useEffect(() => {
-    if (!drilled) return;
+    if (!query) return;
     let active = true;
-
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = query.trim()
-          ? await searchStations({ name: query.trim() })
-          : genre
-            ? await searchStations({ tag: genre })
-            : await searchStations({ country: country! });
-        if (active) setResults(data);
-      } catch {
-        if (active) setResults([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    const debounce = setTimeout(load, query ? 400 : 0);
+    searchStations({ name: query, limit: 200 })
+      .then((stations) => active && setResultSet({ query, stations }))
+      .catch(() => active && setResultSet({ query, stations: [] }));
     return () => {
       active = false;
-      clearTimeout(debounce);
     };
-  }, [query, genre, country, drilled]);
-
-  const clearDrill = () => {
-    setGenre(null);
-    setCountry(null);
-    router.replace(section === "home" ? "/" : `/?section=${section}`);
-  };
-
-  const goToGenre = (tag: string) => {
-    clearDrill();
-    setSection("genres");
-    setGenre(tag);
-    router.replace(`/?genre=${encodeURIComponent(tag)}`);
-  };
+  }, [query]);
 
   const handlePlay = (station: Station) => {
     registerClick(station.stationuuid).catch(() => {});
     play(station);
   };
 
-  const sectionTitle: Record<Exclude<Section, "home">, string> = {
-    trending: "Trending",
-    genres: "Genres",
-    countries: "Countries",
-  };
-
-  if (section === "home" && !drilled) {
+  if (!query && !showTrending) {
     return (
       <div className="absolute inset-0">
         <Globe stations={geoStations} currentId={current?.stationuuid ?? null} onSelect={handlePlay} />
@@ -126,56 +69,31 @@ function Browse() {
     );
   }
 
+  const loading = Boolean(query) && resultSet.query !== query;
+  const stations = query ? resultSet.stations : trending;
+
   return (
     <div className="px-6 sm:px-8 pt-8 pb-32">
-      {section !== "home" && !drilled && <h1 className="text-2xl font-bold mb-6">{sectionTitle[section]}</h1>}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">{query ? `Results for “${query}”` : "Trending"}</h1>
+        {query && (
+          <button onClick={() => router.push("/")} className="text-sm font-bold text-muted hover:text-foreground">
+            ← Back to globe
+          </button>
+        )}
+      </div>
 
-      {drilled ? (
-        <>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">
-              {query ? `Results for "${query}"` : genre ? `${genre} stations` : `${country} stations`}
-            </h2>
-            <button onClick={clearDrill} className="text-sm font-bold text-muted hover:text-foreground">
-              ← Back
-            </button>
-          </div>
-
-          {loading ? (
-            <p className="text-muted text-sm">Loading stations…</p>
-          ) : results.length === 0 ? (
-            <p className="text-muted text-sm">No stations found.</p>
-          ) : (
-            <div className="flex flex-col -mx-6 sm:-mx-8">
-              {results.map((station, i) => (
-                <SignalRow key={station.stationuuid} index={i} station={station} />
-              ))}
-            </div>
-          )}
-        </>
-      ) : section === "trending" ? (
+      {query && loading ? (
+        <p className="text-muted text-sm">Searching stations…</p>
+      ) : stations.length === 0 ? (
+        <p className="text-muted text-sm">No stations found.</p>
+      ) : (
         <div className="flex flex-col -mx-6 sm:-mx-8">
-          {trending.map((station, i) => (
+          {stations.map((station, i) => (
             <SignalRow key={station.stationuuid} index={i} station={station} />
           ))}
         </div>
-      ) : section === "genres" ? genresLoading ? (
-        <p className="text-muted text-sm">Loading genres…</p>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {genres.map((g) => (
-            <GenreTile
-              key={g.tag}
-              label={g.label}
-              gradient={g.gradient}
-              active={false}
-              onClick={() => goToGenre(g.tag)}
-            />
-          ))}
-        </div>
-      ) : section === "countries" ? (
-        <CountryGrid countries={countries} onSelectCountry={setCountry} />
-      ) : null}
+      )}
     </div>
   );
 }

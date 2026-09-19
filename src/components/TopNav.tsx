@@ -9,8 +9,6 @@ import { ListIcon as PhMenu, XIcon as PhClose } from "@phosphor-icons/react";
 const navItems = [
   { href: "/", section: null, label: "Globe" },
   { href: "/?section=trending", section: "trending", label: "Trending" },
-  { href: "/?section=countries", section: "countries", label: "Countries" },
-  { href: "/?section=genres", section: "genres", label: "Genres" },
 ];
 
 function LogoMark() {
@@ -36,11 +34,10 @@ function TopNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeSection = searchParams.get("section");
-  const activeGenre = searchParams.get("genre");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (section: string | null) =>
-    pathname === "/" && !activeGenre && section === (activeSection ?? null);
+    pathname === "/" && !searchParams.get("q") && section === (activeSection ?? null);
 
   const linkClass = (active: boolean) =>
     `relative h-14 px-3.5 flex items-center text-sm font-medium transition-colors ${
@@ -76,8 +73,7 @@ function TopNavContent() {
         <div className="flex-1" />
 
         <GlobalSearch
-          className="hidden sm:block w-72 lg:w-80"
-          inputClassName="rounded-lg bg-surface border border-border text-foreground placeholder:text-muted"
+          className="hidden sm:block w-64 lg:w-80"
         />
 
         <button
@@ -92,7 +88,7 @@ function TopNavContent() {
 
       {menuOpen && (
         <div className="md:hidden absolute top-full inset-x-0 border-b border-border bg-background px-4 py-3 shadow-2xl flex flex-col gap-1">
-          <GlobalSearch className="sm:hidden mb-2" inputClassName="rounded-lg bg-surface border border-border text-foreground placeholder:text-muted" />
+          <GlobalSearch className="sm:hidden mb-2" />
           {[...navItems, { href: "/favorites", section: "fav", label: "Liked" }].map((item) => (
             <Link
               key={item.label}

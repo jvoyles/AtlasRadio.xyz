@@ -65,6 +65,8 @@ export function Globe({
   const mapRef = useRef<MapLibreMap | null>(null);
   const onSelectRef = useRef(onSelect);
   const stationsRef = useRef(stations);
+  const pauseSpinRef = useRef<() => void>(() => {});
+  const lastFlownRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -333,6 +335,7 @@ export function Globe({
         spinning = true;
       }, 2500);
     };
+    pauseSpinRef.current = pauseSpin;
     map.on("dragstart", pauseSpin);
     map.on("wheel", pauseSpin);
 
@@ -384,6 +387,29 @@ export function Globe({
     if (map.getSource("stations")) apply();
     else map.once("load", apply);
   }, [stations]);
+
+  // Tuning in from anywhere (a dot, the search box) glides the globe to the
+  // station. The first value is the one already playing on mount, so it
+  // only records itself instead of flying.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (lastFlownRef.current === undefined) {
+      lastFlownRef.current = currentId ?? null;
+      return;
+    }
+    if (!currentId || currentId === lastFlownRef.current) return;
+    const station = stations.find((s) => s.stationuuid === currentId);
+    if (!station || typeof station.geo_lat !== "number" || typeof station.geo_long !== "number") return;
+    lastFlownRef.current = currentId;
+    pauseSpinRef.current();
+    map.flyTo({
+      center: [station.geo_long, station.geo_lat],
+      zoom: Math.max(map.getZoom(), 3.2),
+      duration: 1600,
+      essential: true,
+    });
+  }, [stations, currentId]);
 
   useEffect(() => {
     const map = mapRef.current;
