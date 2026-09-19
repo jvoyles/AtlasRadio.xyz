@@ -11,12 +11,12 @@ export default function FavoritesPage() {
   const { favorites, loading } = useFavorites();
 
   if (authLoading || loading) {
-    return <div className="px-8 pt-24 pb-32 text-muted text-sm">Loading…</div>;
+    return <div className="px-8 pt-8 pb-32 text-muted text-sm">Loading…</div>;
   }
 
   if (!user) {
     return (
-      <div className="px-8 pt-24 pb-32 max-w-md">
+      <div className="px-8 pt-8 pb-32 max-w-md">
         <h1 className="text-2xl font-bold mb-6">Liked Songs</h1>
         <p className="text-muted text-sm mb-4">Log in to save and view your favorite stations.</p>
         <Link
@@ -39,7 +39,7 @@ export default function FavoritesPage() {
   }));
 
   return (
-    <div className="px-8 pt-24 pb-32">
+    <div className="px-8 pt-8 pb-32">
       <h1 className="text-2xl font-bold mb-6">Liked Songs</h1>
       {stations.length === 0 ? (
         <p className="text-muted text-sm">

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 export function GlobalSearch({
   className = "",
-  inputClassName = "bg-paper-elevated text-ink placeholder:text-ink-muted",
+  inputClassName = "rounded-full bg-paper-elevated text-ink placeholder:text-ink-muted",
 }: {
   className?: string;
   inputClassName?: string;
@@ -58,7 +58,7 @@ function GlobalSearchContent({
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
-        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted"
       >
         <circle cx="11" cy="11" r="7" />
         <path d="M21 21l-4.3-4.3" />
@@ -68,7 +68,7 @@ function GlobalSearchContent({
         placeholder="Find a station or city…"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className={`w-full pl-10 pr-9 py-2.5 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-accent ${inputClassName}`}
+        className={`w-full pl-10 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent ${inputClassName}`}
       />
       {value && (
         <button

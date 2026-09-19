@@ -125,7 +125,7 @@ function Browse() {
   }
 
   return (
-    <div className="px-6 sm:px-8 pt-24 pb-32">
+    <div className="px-6 sm:px-8 pt-8 pb-32">
       {section !== "home" && !drilled && <h1 className="text-2xl font-bold mb-6">{sectionTitle[section]}</h1>}
 
       {drilled ? (

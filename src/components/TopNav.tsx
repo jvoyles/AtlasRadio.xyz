@@ -1,0 +1,145 @@
+"use client";
+
+import { Suspense, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { createClient } from "@/lib/supabase/client";
+import { GlobalSearch } from "./GlobalSearch";
+
+const navItems = [
+  { href: "/", section: null, label: "Globe" },
+  { href: "/?section=trending", section: "trending", label: "Trending" },
+  { href: "/?section=countries", section: "countries", label: "Countries" },
+  { href: "/?section=genres", section: "genres", label: "Genres" },
+];
+
+function LogoMark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="16" r="15" fill="var(--accent)" />
+      <circle cx="16" cy="16" r="2.6" fill="#fff" />
+      <path d="M10.8 10.8a7.4 7.4 0 0 0 0 10.4M21.2 10.8a7.4 7.4 0 0 1 0 10.4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M7.4 7.4a12.2 12.2 0 0 0 0 17.2M24.6 7.4a12.2 12.2 0 0 1 0 17.2" stroke="#fff" strokeOpacity="0.55" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function TopNav() {
+  return (
+    <Suspense fallback={<header className="h-14 shrink-0 border-b border-border" />}>
+      <TopNavContent />
+    </Suspense>
+  );
+}
+
+function TopNavContent() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading } = useAuth();
+  const activeSection = searchParams.get("section");
+  const activeGenre = searchParams.get("genre");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const isActive = (section: string | null) =>
+    pathname === "/" && !activeGenre && section === (activeSection ?? null);
+
+  const handleSignOut = async () => {
+    await createClient().auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
+
+  const linkClass = (active: boolean) =>
+    `relative h-14 px-3.5 flex items-center text-sm font-medium transition-colors ${
+      active ? "text-foreground" : "text-muted hover:text-foreground"
+    }`;
+  const underline = (active: boolean) =>
+    active ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-accent" /> : null;
+
+  return (
+    <header className="relative z-30 h-14 shrink-0 w-full border-b border-border bg-background/80 backdrop-blur-xl">
+      <div className="h-full w-full px-4 sm:px-6 flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2.5 mr-4 shrink-0">
+          <LogoMark />
+          <span className="text-[17px] font-bold tracking-tight text-foreground">Airwave</span>
+        </Link>
+
+        <nav className="hidden md:flex items-stretch h-14">
+          {navItems.map((item) => {
+            const active = isActive(item.section);
+            return (
+              <Link key={item.label} href={item.href} className={linkClass(active)}>
+                {item.label}
+                {underline(active)}
+              </Link>
+            );
+          })}
+          <Link href="/favorites" className={linkClass(pathname === "/favorites")}>
+            Liked
+            {underline(pathname === "/favorites")}
+          </Link>
+        </nav>
+
+        <div className="flex-1" />
+
+        <GlobalSearch
+          className="hidden sm:block w-72 lg:w-80"
+          inputClassName="rounded-lg bg-surface border border-border text-foreground placeholder:text-muted"
+        />
+
+        <div className="hidden md:block">
+          {loading ? null : user ? (
+            <button
+              onClick={handleSignOut}
+              title="Log out"
+              className="w-9 h-9 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center hover:bg-accent-hover transition-colors"
+            >
+              {user.email?.[0]?.toUpperCase()}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold transition-colors whitespace-nowrap"
+            >
+              Log in
+            </Link>
+          )}
+        </div>
+
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-foreground hover:bg-surface-elevated"
+          aria-label="Toggle menu"
+          aria-expanded={menuOpen}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+          </svg>
+        </button>
+      </div>
+
+      {menuOpen && (
+        <div className="md:hidden absolute top-full inset-x-0 border-b border-border bg-background px-4 py-3 shadow-2xl flex flex-col gap-1">
+          <GlobalSearch className="sm:hidden mb-2" inputClassName="rounded-lg bg-surface border border-border text-foreground placeholder:text-muted" />
+          {[...navItems, { href: "/favorites", section: "fav", label: "Liked" }].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMenuOpen(false)}
+              className="px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface-elevated"
+            >
+              {item.label}
+            </Link>
+          ))}
+          {!loading && !user && (
+            <Link href="/login" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-semibold text-accent">
+              Log in
+            </Link>
+          )}
+        </div>
+      )}
+    </header>
+  );
+}
