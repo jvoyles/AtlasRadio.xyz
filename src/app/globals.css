@@ -334,3 +334,22 @@ body {
   }
 }
 
+
+/* "Now playing" level meter: bars scale up from the baseline at different tempos. */
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.22); }
+  20% { transform: scaleY(0.95); }
+  40% { transform: scaleY(0.45); }
+  60% { transform: scaleY(1); }
+  80% { transform: scaleY(0.35); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq-bounce 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar {
+    animation: none;
+    transform: scaleY(0.6);
+  }
+}

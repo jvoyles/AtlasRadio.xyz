@@ -35,9 +35,11 @@ export function SignalRow({ index, station }: { index?: number; station: Station
           <span className={`text-sm text-muted tabular-nums ${live ? "hidden" : "group-hover:hidden"}`}>
             {index + 1}
           </span>
-          <span className={live ? "group-hover:hidden" : "hidden"}>
-            <EqualizerBars />
-          </span>
+          {live && (
+            <span className="group-hover:hidden">
+              <EqualizerBars />
+            </span>
+          )}
           <button
             onClick={handlePlay}
             tabIndex={-1}
