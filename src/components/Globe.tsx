@@ -222,7 +222,7 @@ export function Globe({
           "text-size": window.innerWidth < 768 ? 11 : 12,
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "#1c0d05" },
+        paint: { "text-color": "#0a0e17" },
       });
       map.addLayer({
         id: "stations-layer",
