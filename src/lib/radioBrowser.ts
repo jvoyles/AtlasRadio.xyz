@@ -18,7 +18,7 @@ const MIRRORS = [
   "https://at1.api.radio-browser.info",
 ];
 
-const USER_AGENT = "radio-app/1.0 (portfolio project)";
+const USER_AGENT = "AtlasRadio/1.0 (+https://www.atlasradio.xyz)";
 
 type ApiParams = Record<string, string | number | boolean>;
 

@@ -89,7 +89,7 @@ function Browse() {
   if (!query && !showTrending) {
     return (
       <div className="absolute inset-0">
-        <h1 className="sr-only">Airwave: live radio stations from around the world</h1>
+        <h1 className="sr-only">Atlas Radio: live radio stations from around the world</h1>
         <Link
           href="/?section=trending"
           className="sr-only focus:not-sr-only focus:absolute focus:top-20 focus:left-3 focus:z-40 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white"

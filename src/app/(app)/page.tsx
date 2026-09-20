@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import BrowsePage from "@/components/BrowsePage";
 import { stationByUuid } from "@/lib/radioBrowser";
 import { isStationUuid } from "@/lib/sanitize";
-import { SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
 export async function generateMetadata({ searchParams }: PageProps<"/">): Promise<Metadata> {
   const { q, section, station } = await searchParams;
@@ -13,7 +13,7 @@ export async function generateMetadata({ searchParams }: PageProps<"/">): Promis
     const found = await stationByUuid(stationId).catch(() => null);
     if (found) {
       const title = `${found.name} — listen live`;
-      const description = `${found.name}${found.country ? ` from ${found.country}` : ""} — listen live on Airwave, the interactive radio globe. Free, no account.`;
+      const description = `${found.name}${found.country ? ` from ${found.country}` : ""} — listen live on ${SITE_NAME}, the interactive radio globe. Free, no account.`;
       const images = [{ url: `/api/og?station=${stationId}`, width: 1200, height: 630, alt: found.name }];
       return {
         title,
@@ -30,11 +30,11 @@ export async function generateMetadata({ searchParams }: PageProps<"/">): Promis
   if (section === "trending") {
     return {
       title: "Trending stations",
-      description: "The most-listened live radio stations on Airwave right now.",
+      description: `The most-listened live radio stations on ${SITE_NAME} right now.`,
       alternates: { canonical: "/?section=trending" },
     };
   }
-  return { title: { absolute: `Airwave — ${SITE_TAGLINE}` }, description: SITE_DESCRIPTION };
+  return { title: { absolute: `${SITE_NAME} — ${SITE_TAGLINE}` }, description: SITE_DESCRIPTION };
 }
 
 export default function Page() {

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       title={station.name}
       subtitle={station.country ? `Live from ${station.country}` : "Live internet radio"}
       chips={station.tags.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 3)}
-      cta="Listen live on Airwave"
+      cta={`Listen live on ${SITE_NAME}`}
     />
   ) : (
     <OgCard eyebrow={SITE_NAME} title="Tune into the world's radio" subtitle="Thousands of live stations on an interactive globe." />

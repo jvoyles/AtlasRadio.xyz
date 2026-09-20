@@ -1,4 +1,4 @@
-# Airwave — Internet Radio
+# Atlas Radio — Internet Radio
 
 A Spotify-style web app for browsing and streaming free internet radio stations from around the world.
 
@@ -29,4 +29,4 @@ npm run dev
 
 - Metadata, Open Graph and Twitter cards are set in `src/app/layout.tsx` and per view in `src/app/(app)/page.tsx`; `robots.txt`, `sitemap.xml`, the web manifest and the app icons are generated from `src/app/*.ts(x)`.
 - Shared station links (`/?station=<uuid>`) get their own title, description and a generated preview image from `/api/og`. Search results and Liked are `noindex`.
-- Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://airwave.example`) once you have a custom domain; on Vercel the production URL is used automatically. It feeds canonical URLs, the sitemap and social image URLs.
+- Production builds on Vercel default to `https://www.atlasradio.xyz`; set `NEXT_PUBLIC_SITE_URL` to override it (for example when the domain changes). It feeds canonical URLs, the sitemap and social image URLs.

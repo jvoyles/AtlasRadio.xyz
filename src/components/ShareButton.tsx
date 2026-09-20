@@ -60,7 +60,7 @@ export function ShareButton({
     };
   }, [open]);
 
-  const shareText = `Listening to ${station.name} on Airwave`;
+  const shareText = `Listening to ${station.name} on Atlas Radio`;
 
   const copyLink = async () => {
     try {

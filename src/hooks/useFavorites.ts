@@ -8,7 +8,8 @@ import { sanitizeStations } from "@/lib/sanitize";
 // nothing is stored server-side. A tiny external store keeps every heart
 // button (list rows, player bar, now-playing view) in sync.
 
-const STORAGE_KEY = "airwave:favorites";
+const STORAGE_KEY = "atlasradio:favorites";
+const LEGACY_STORAGE_KEY = "airwave:favorites";
 const EMPTY: Station[] = [];
 
 let cache: Station[] | null = null;
@@ -17,7 +18,7 @@ const listeners = new Set<() => void>();
 function read(): Station[] {
   if (cache) return cache;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
     cache = raw ? sanitizeStations(JSON.parse(raw)) : EMPTY;
   } catch {
     cache = EMPTY;

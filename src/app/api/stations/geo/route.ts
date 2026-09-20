@@ -32,7 +32,7 @@ async function fetchPage(page: number): Promise<Raw[]> {
   for (const base of MIRRORS) {
     try {
       const res = await fetch(`${base}/json/stations/search?${query}`, {
-        headers: { "User-Agent": "radio-app/1.0 (portfolio project)" },
+        headers: { "User-Agent": "AtlasRadio/1.0 (+https://www.atlasradio.xyz)" },
         next: { revalidate: 21600 },
       });
       if (!res.ok) throw new Error(`${base} responded ${res.status}`);

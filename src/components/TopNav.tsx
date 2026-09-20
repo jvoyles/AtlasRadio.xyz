@@ -74,7 +74,7 @@ function TopNavContent() {
           className="pointer-events-auto glass-island justify-self-start flex items-center gap-2.5 h-12 pl-2 pr-4 rounded-full"
         >
           <Logo live={isPlaying} />
-          <span className="text-[17px] font-bold tracking-tight text-foreground">Airwave</span>
+          <span className="text-[17px] font-bold tracking-tight text-foreground">Atlas Radio</span>
         </Link>
 
         <nav

@@ -12,12 +12,13 @@ import {
 import type { Station } from "@/lib/radioBrowser";
 import { isPublicHttpUrl, sanitizeStations } from "@/lib/sanitize";
 
-const RECENT_KEY = "airwave:recently-played";
+const RECENT_KEY = "atlasradio:recently-played";
+const LEGACY_RECENT_KEY = "airwave:recently-played";
 const RECENT_MAX = 12;
 
 function readRecent(): Station[] {
   try {
-    const raw = localStorage.getItem(RECENT_KEY);
+    const raw = localStorage.getItem(RECENT_KEY) ?? localStorage.getItem(LEGACY_RECENT_KEY);
     return raw ? sanitizeStations(JSON.parse(raw)) : [];
   } catch {
     return [];
@@ -183,7 +184,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: current.name,
       artist: current.country || "Internet Radio",
-      album: "Airwave",
+      album: "Atlas Radio",
       artwork: current.favicon ? [{ src: current.favicon, sizes: "512x512", type: "image/png" }] : [],
     });
   }, [current]);
