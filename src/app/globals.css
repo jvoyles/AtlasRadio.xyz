@@ -331,11 +331,3 @@ body {
   }
 }
 
-@keyframes ufo-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
-}
-.ufo-light {
-  animation: ufo-blink 0.9s ease-in-out infinite;
-  filter: drop-shadow(0 0 3px currentColor);
-}
