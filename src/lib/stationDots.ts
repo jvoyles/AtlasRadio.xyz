@@ -85,6 +85,12 @@ function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
+      if (!opts.strokeColor) {
+        // A thin dark halo under the white ring keeps small dots legible on pale, busy street maps.
+        ctx.lineWidth = 3.4 * PIXEL_RATIO;
+        ctx.strokeStyle = "rgba(10,14,23,0.55)";
+        ctx.stroke();
+      }
       ctx.lineWidth = (opts.strokeWidth ?? 1.2) * PIXEL_RATIO;
       ctx.strokeStyle = opts.strokeColor ?? "rgba(255,255,255,0.95)";
       ctx.stroke();
@@ -235,4 +241,40 @@ export function buildStationTooltip(station: Station, onTap?: () => void): HTMLE
     root.addEventListener("click", onTap);
   }
   return root;
+}
+
+/**
+ * Directory entries often share one coordinate (a whole city pinned to its
+ * centre), which stacks their dots into a single blob no matter how far you
+ * zoom. Fan those out on a small sunflower spiral (~1 km across for a dozen
+ * stations) so each one becomes its own dot once you're at city zoom.
+ */
+export function spreadOverlapping(stations: Station[]): Station[] {
+  const groups = new Map<string, number[]>();
+  stations.forEach((st, i) => {
+    if (typeof st.geo_lat !== "number" || typeof st.geo_long !== "number") return;
+    const key = `${st.geo_lat.toFixed(3)},${st.geo_long.toFixed(3)}`;
+    const list = groups.get(key);
+    if (list) list.push(i);
+    else groups.set(key, [i]);
+  });
+
+  const out = stations.slice();
+  const GOLDEN = 2.39996323;
+  for (const indexes of groups.values()) {
+    if (indexes.length < 2) continue;
+    indexes.forEach((stationIndex, n) => {
+      if (n === 0) return;
+      const st = stations[stationIndex];
+      const lat = st.geo_lat as number;
+      const radius = 0.0025 * Math.sqrt(n);
+      const angle = n * GOLDEN;
+      out[stationIndex] = {
+        ...st,
+        geo_lat: lat + radius * Math.sin(angle),
+        geo_long: (st.geo_long as number) + (radius * Math.cos(angle)) / Math.max(0.2, Math.cos((lat * Math.PI) / 180)),
+      };
+    });
+  }
+  return out;
 }

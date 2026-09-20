@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AttributionControl, Map as MapLibreMap, Popup, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Station } from "@/lib/radioBrowser";
@@ -12,6 +12,7 @@ import {
   buildStationTooltip,
   dotVariant,
   registerStationImages,
+  spreadOverlapping,
 } from "@/lib/stationDots";
 import { applyTerrainPalette, createAtmosphereHalo, createStarfield } from "@/lib/globeLayers";
 
@@ -33,6 +34,9 @@ const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 maplibreConfig.WORKER_URL = "/maplibre-gl-worker.mjs";
 
 const SPIN_DEGREES_PER_SEC = 3;
+// The idle spin only makes sense with the whole globe in view; zoomed in, even
+// a few degrees per second whips the map away from what someone is reading.
+const SPIN_MAX_ZOOM = 3;
 
 type Comet = { x: number; y: number; angle: number; speed: number; len: number; life: number; maxLife: number };
 
@@ -53,7 +57,7 @@ function initialZoom() {
 }
 
 export function Globe({
-  stations,
+  stations: rawStations,
   currentId,
   onSelect,
 }: {
@@ -66,6 +70,7 @@ export function Globe({
   const starCanvasRef = useRef<HTMLCanvasElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const onSelectRef = useRef(onSelect);
+  const stations = useMemo(() => spreadOverlapping(rawStations), [rawStations]);
   const stationsRef = useRef(stations);
   const pauseSpinRef = useRef<() => void>(() => {});
   const lastFlownRef = useRef<string | null | undefined>(undefined);
@@ -188,8 +193,8 @@ export function Globe({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: window.innerWidth < 768 ? 48 : 64,
-        clusterMaxZoom: 7,
+        clusterRadius: window.innerWidth < 768 ? 40 : 50,
+        clusterMaxZoom: 5,
       });
       map.addLayer({
         id: "clusters-layer",
@@ -226,6 +231,8 @@ export function Globe({
         filter: ["!", ["has", "point_count"]],
         layout: {
           "icon-image": ["concat", "station-dot-", ["to-string", ["get", "variant"]]],
+          // Dots grow as you zoom in so they stay findable on a detailed street map.
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 2, 0.85, 6, 1.1, 9, 1.5, 12, 1.9],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
         },
@@ -239,7 +246,12 @@ export function Globe({
         id: "active-station-layer",
         type: "symbol",
         source: "active-station",
-        layout: { "icon-image": ACTIVE_DOT_IMAGE, "icon-allow-overlap": true, "icon-ignore-placement": true },
+        layout: {
+          "icon-image": ACTIVE_DOT_IMAGE,
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 2, 0.9, 9, 1.15, 12, 1.4],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
       });
 
       map.on("click", "clusters-layer", async (e: MapLayerMouseEvent) => {
@@ -334,7 +346,7 @@ export function Globe({
       if (idleTimeout) clearTimeout(idleTimeout);
       idleTimeout = setTimeout(() => {
         spinning = !reduceMotion;
-      }, 2500);
+      }, 4000);
     };
     pauseSpinRef.current = pauseSpin;
     map.on("dragstart", pauseSpin);
@@ -346,7 +358,7 @@ export function Globe({
       frame = requestAnimationFrame(spin);
       const dt = (now - lastTime) / 1000;
       lastTime = now;
-      if (spinning && !hovering) {
+      if (spinning && !hovering && map.getZoom() < SPIN_MAX_ZOOM) {
         const center = map.getCenter();
         map.jumpTo({ center: [center.lng + SPIN_DEGREES_PER_SEC * dt, center.lat] });
       }
