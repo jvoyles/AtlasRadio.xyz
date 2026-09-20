@@ -7,6 +7,10 @@ import { sanitizeStation } from "@/lib/sanitize";
 // cache each page so the client downloads a few MB instead of the raw dump.
 export const GEO_PAGE_SIZE = 1500;
 
+// The upstream directory can take several seconds on a cold cache; the default
+// serverless limit on free plans is short.
+export const maxDuration = 30;
+
 const MIRRORS = [
   "https://de1.api.radio-browser.info",
   "https://nl1.api.radio-browser.info",
