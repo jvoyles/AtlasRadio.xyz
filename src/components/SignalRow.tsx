@@ -40,22 +40,24 @@ export function SignalRow({ index, station }: { index?: number; station: Station
           </span>
           <button
             onClick={handlePlay}
+            tabIndex={-1}
+            aria-hidden="true"
             className={`text-foreground ${live ? "hidden" : "hidden group-hover:block"}`}
-            aria-label="Play"
           >
             <PlayIcon />
           </button>
           <button
             onClick={handlePlay}
+            tabIndex={-1}
+            aria-hidden="true"
             className={`text-foreground ${live ? "hidden group-hover:block" : "hidden"}`}
-            aria-label="Pause"
           >
             <PauseIcon />
           </button>
         </span>
       )}
 
-      <button onClick={handlePlay} className="relative w-10 h-10 rounded-md overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center">
+      <button onClick={handlePlay} tabIndex={-1} aria-hidden="true" className="relative w-10 h-10 rounded-md overflow-hidden bg-surface-elevated shrink-0 flex items-center justify-center">
         {station.favicon ? (
           <img
             src={station.favicon}
@@ -73,8 +75,12 @@ export function SignalRow({ index, station }: { index?: number; station: Station
         )}
       </button>
 
-      <button onClick={handlePlay} className="min-w-0 flex-1 text-left">
-        <p className={`text-sm font-medium truncate ${live ? "text-accent" : "text-foreground"}`}>{station.name}</p>
+      <button
+        onClick={handlePlay}
+        className="min-w-0 flex-1 text-left rounded-md"
+        aria-label={`${live ? "Pause" : "Play"} ${station.name}${station.country ? `, ${station.country}` : ""}`}
+      >
+        <p className={`text-sm font-medium truncate ${live ? "text-accent-fg" : "text-foreground"}`}>{station.name}</p>
         <p className="text-[13px] text-muted truncate">
           {station.country || "Unknown"} · {station.tags?.split(",")[0] || "radio"}
         </p>
@@ -82,10 +88,11 @@ export function SignalRow({ index, station }: { index?: number; station: Station
 
       <button
         onClick={handleFavorite}
-        className={`shrink-0 p-1.5 -mr-1.5 transition-opacity ${
-          favorited ? "text-accent opacity-100" : "text-muted hover:text-foreground opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+        className={`shrink-0 p-1.5 -mr-1.5 rounded-full transition-opacity focus-visible:opacity-100 ${
+          favorited ? "text-accent-fg opacity-100" : "text-muted hover:text-foreground opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
         }`}
-        aria-label="Toggle favorite"
+        aria-label={`Like ${station.name}`}
+        aria-pressed={favorited}
       >
         <HeartIcon filled={favorited} />
       </button>

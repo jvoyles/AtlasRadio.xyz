@@ -217,7 +217,7 @@ export function Globe({
           "text-size": window.innerWidth < 768 ? 11 : 12,
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "#ffffff" },
+        paint: { "text-color": "#1c0d05" },
       });
       map.addLayer({
         id: "stations-layer",
@@ -247,7 +247,7 @@ export function Globe({
         if (!feature) return;
         const source = map.getSource("stations") as GeoJSONSource;
         const zoom = await source.getClusterExpansionZoom(feature.properties.cluster_id);
-        map.easeTo({ center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom + 0.5, duration: 700 });
+        map.easeTo({ center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom: zoom + 0.5, duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 700 });
         pauseSpin();
       });
       map.on("mouseenter", "clusters-layer", () => {
@@ -325,14 +325,15 @@ export function Globe({
       map.on("dragstart", () => setHovered(null));
     });
 
-    let spinning = true;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let spinning = !reduceMotion;
     let hovering = false;
     let idleTimeout: ReturnType<typeof setTimeout> | null = null;
     const pauseSpin = () => {
       spinning = false;
       if (idleTimeout) clearTimeout(idleTimeout);
       idleTimeout = setTimeout(() => {
-        spinning = true;
+        spinning = !reduceMotion;
       }, 2500);
     };
     pauseSpinRef.current = pauseSpin;
@@ -406,8 +407,7 @@ export function Globe({
     map.flyTo({
       center: [station.geo_long, station.geo_lat],
       zoom: Math.max(map.getZoom(), 3.2),
-      duration: 1600,
-      essential: true,
+      duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1600,
     });
   }, [stations, currentId]);
 
@@ -434,7 +434,11 @@ export function Globe({
   }, [stations, currentId]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full cursor-grab active:cursor-grabbing touch-none">
+    <div
+      ref={containerRef}
+      role="region"
+      aria-label="Interactive globe map of radio stations. Drag to rotate, scroll to zoom; use Trending or search to browse stations with a keyboard."
+      className="relative w-full h-full cursor-grab active:cursor-grabbing touch-none">
       <div
         className="absolute inset-0"
         style={{ background: "radial-gradient(ellipse at center, #0C1B33 0%, #081222 100%)" }}

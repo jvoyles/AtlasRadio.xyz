@@ -8,6 +8,8 @@
   --muted: rgba(231, 235, 240, 0.62);
   --accent: #2f6feb;
   --accent-hover: #4a82f5;
+  /* Accent for text and icons on the dark surface (#2f6feb is only 4.2:1). */
+  --accent-fg: #6b96f5;
   --border: rgba(231, 235, 240, 0.14);
 
   /* The paper/ink pair: dedicated to the floating chrome (nav, player
@@ -28,6 +30,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
   --color-border: var(--border);
   --color-paper: var(--paper);
   --color-paper-elevated: var(--paper-elevated);
@@ -266,7 +269,7 @@ body {
 /* Floating top-bar islands: translucent dark glass that lets the globe and
    starfield read through behind it. */
 .glass-island {
-  background: rgba(10, 14, 23, 0.55);
+  background: rgba(10, 14, 23, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(20px) saturate(1.5);
@@ -281,7 +284,7 @@ body {
 .maplibregl-ctrl-top-right .maplibregl-ctrl.maplibregl-ctrl-attrib {
   margin: 0 12px 0 0;
   color: var(--ink);
-  background: rgba(10, 14, 23, 0.55);
+  background: rgba(10, 14, 23, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(20px) saturate(1.5);

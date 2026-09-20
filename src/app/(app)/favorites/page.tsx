@@ -13,7 +13,7 @@ export default function FavoritesPage() {
       {favorites.length === 0 ? (
         <p className="text-muted text-sm">
           No liked stations yet — head to{" "}
-          <Link href="/" className="text-accent hover:underline">
+          <Link href="/" className="text-accent-fg hover:underline">
             the globe
           </Link>{" "}
           and tap the heart on a station. Likes are saved in this browser.

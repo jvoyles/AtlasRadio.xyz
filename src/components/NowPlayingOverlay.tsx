@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { registerClick } from "@/lib/radioBrowser";
@@ -50,6 +50,45 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
     setTimeout(onClose, 150);
   };
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const handleCloseRef = useRef(handleClose);
+  useEffect(() => {
+    handleCloseRef.current = handleClose;
+  });
+
+  // Modal behaviour: focus moves in, Tab stays inside, Esc closes, and focus
+  // returns to whatever opened it.
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab" || !rootRef.current) return;
+      const focusable = Array.from(
+        rootRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input, [tabindex]:not([tabindex="-1"])')
+      ).filter((el) => el.offsetParent !== null);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus?.();
+    };
+  }, []);
+
   if (!current) return null;
   const favorited = isFavorite(current.stationuuid);
   const live = isPlaying && !isLoading;
@@ -64,6 +103,10 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
 
   return (
     <div
+      ref={rootRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Now playing: ${current.name}`}
       className={`fixed inset-0 z-50 overflow-hidden transition-opacity duration-200 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
@@ -84,6 +127,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
       </div>
 
       <button
+        ref={closeRef}
         onClick={handleClose}
         className="absolute top-[max(1.25rem,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-20 paper-card rounded-full w-9 h-9 flex items-center justify-center text-ink-muted hover:text-ink"
         aria-label="Close now playing"
@@ -126,8 +170,9 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                 </div>
                 <button
                   onClick={handleFavorite}
-                  className={`shrink-0 ${favorited ? "text-accent" : "text-muted hover:text-foreground"}`}
-                  aria-label="Toggle favorite"
+                  className={`shrink-0 ${favorited ? "text-accent-fg" : "text-muted hover:text-foreground"}`}
+                  aria-label={`Like ${current.name}`}
+                  aria-pressed={favorited}
                 >
                   <HeartIcon filled={favorited} />
                 </button>
@@ -140,7 +185,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                 <div className="flex-1 h-1 rounded-full bg-surface-elevated overflow-hidden">
                   <div className={`h-full rounded-full bg-foreground ${live ? "w-full" : "w-0"}`} />
                 </div>
-                <span className={live ? "text-accent font-semibold flex items-center gap-1.5" : ""}>
+                <span className={live ? "text-accent-fg font-semibold flex items-center gap-1.5" : ""}>
                   {live && <EqualizerBars />}
                   {live ? "LIVE" : "—"}
                 </span>
@@ -185,8 +230,9 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                 </button>
                 <button
                   onClick={toggleAutoRetry}
-                  className={`transition-colors ${autoRetry ? "text-accent" : "text-muted hover:text-foreground"}`}
-                  aria-label="Toggle auto-reconnect"
+                  className={`transition-colors ${autoRetry ? "text-accent-fg" : "text-muted hover:text-foreground"}`}
+                  aria-label="Auto-reconnect if the stream drops"
+                  aria-pressed={autoRetry}
                   title="Auto-reconnect if the stream drops"
                 >
                   <RepeatIcon />

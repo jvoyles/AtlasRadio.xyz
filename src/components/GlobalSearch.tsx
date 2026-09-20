@@ -91,6 +91,7 @@ function GlobalSearchContent({ className }: { className: string }) {
 
   const close = () => {
     setOpen(false);
+    setHighlight(-1);
     inputRef.current?.blur();
   };
 
@@ -136,13 +137,17 @@ function GlobalSearchContent({ className }: { className: string }) {
             : "hover:!border-white/20"
         }`}
       >
-        <PhSearch size={18} weight="bold" className={`shrink-0 transition-colors ${open ? "text-accent" : "text-ink-muted"}`} />
+        <PhSearch size={18} weight="bold" className={`shrink-0 transition-colors ${open ? "text-accent-fg" : "text-ink-muted"}`} />
         <input
           ref={inputRef}
           type="text"
           role="combobox"
-          aria-expanded={showPanel}
-          aria-controls="search-results"
+          aria-label="Search radio stations"
+          aria-autocomplete="list"
+          aria-expanded={showPanel && hasQuery && results.length > 0}
+          aria-controls={hasQuery && results.length > 0 ? "search-results" : undefined}
+          aria-activedescendant={showPanel && highlight >= 0 && results[highlight] ? `search-option-${highlight}` : undefined}
+          enterKeyHint="search"
           autoComplete="off"
           spellCheck={false}
           placeholder="Search stations…"
@@ -157,7 +162,7 @@ function GlobalSearchContent({ className }: { className: string }) {
           className="flex-1 min-w-0 bg-transparent text-sm text-ink placeholder:text-ink-muted focus:outline-none"
         />
         {loading ? (
-          <PhSpinner size={16} weight="bold" className="shrink-0 animate-spin text-ink-muted" />
+          <PhSpinner size={16} weight="bold" aria-hidden="true" className="shrink-0 animate-spin text-ink-muted" />
         ) : value ? (
           <button
             onClick={() => {
@@ -170,16 +175,22 @@ function GlobalSearchContent({ className }: { className: string }) {
             <PhClose size={12} weight="bold" />
           </button>
         ) : (
-          <kbd className="hidden lg:flex shrink-0 h-6 min-w-6 px-1.5 rounded-md border border-white/10 bg-white/[0.06] text-[11px] text-ink-muted items-center justify-center font-sans">
+          <kbd aria-hidden="true" className="hidden lg:flex shrink-0 h-6 min-w-6 px-1.5 rounded-md border border-white/10 bg-white/[0.06] text-[11px] text-ink-muted items-center justify-center font-sans">
             /
           </kbd>
         )}
       </div>
 
+      <p role="status" aria-live="polite" className="sr-only">
+        {open && hasQuery && !loading
+          ? results.length === 0
+            ? `No stations match ${trimmed}`
+            : `${results.length} station suggestions available. Use the up and down arrow keys to review them.`
+          : ""}
+      </p>
+
       {showPanel && (
         <div
-          id="search-results"
-          role="listbox"
           className="absolute right-0 top-full mt-2 w-[min(26rem,calc(100vw-2rem))] max-md:w-full rounded-2xl border border-white/10 bg-[rgba(10,14,23,0.985)] backdrop-blur-2xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.8)] overflow-hidden z-40"
         >
           {!hasQuery ? (
@@ -202,6 +213,7 @@ function GlobalSearchContent({ className }: { className: string }) {
             </div>
           ) : (
             <>
+              {(results.length === 0) && (
               <div className="p-1.5">
                 {results.length === 0 && !loading && (
                   <p className="px-3 py-6 text-center text-sm text-ink-muted">No stations match “{trimmed}”.</p>
@@ -219,10 +231,16 @@ function GlobalSearchContent({ className }: { className: string }) {
                     ))}
                   </div>
                 )}
+              </div>
+              )}
+              {results.length > 0 && (
+              <div id="search-results" role="listbox" aria-label="Station suggestions" className="p-1.5">
                 {results.map((station, i) => (
                   <button
                     key={station.stationuuid}
+                    id={`search-option-${i}`}
                     role="option"
+                    tabIndex={-1}
                     aria-selected={i === highlight}
                     onMouseEnter={() => setHighlight(i)}
                     onClick={() => choose(station)}
@@ -256,6 +274,7 @@ function GlobalSearchContent({ className }: { className: string }) {
                   </button>
                 ))}
               </div>
+              )}
               <button
                 onClick={() => submit(value)}
                 className="w-full flex items-center justify-between gap-3 px-4 py-3 border-t border-white/10 text-[13px] text-ink-muted hover:text-ink hover:bg-white/[0.05] transition-colors"

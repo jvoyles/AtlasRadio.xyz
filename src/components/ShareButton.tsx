@@ -27,14 +27,30 @@ export function ShareButton({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
+    const items = () => Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+    items()[0]?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      } else if (e.key === "Tab") {
+        setOpen(false);
+      } else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+        e.preventDefault();
+        const list = items();
+        const i = list.indexOf(document.activeElement as HTMLElement);
+        const next =
+          e.key === "Home" ? 0 : e.key === "End" ? list.length - 1 : e.key === "ArrowDown" ? (i + 1) % list.length : (i - 1 + list.length) % list.length;
+        list[next]?.focus();
+      }
     };
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("keydown", onKey);
@@ -87,8 +103,9 @@ export function ShareButton({
   return (
     <div ref={rootRef} className="relative flex items-center">
       <button
+        ref={triggerRef}
         onClick={() => setOpen((v) => !v)}
-        className={`transition-colors ${open ? "text-ink" : idleClassName}`}
+        className={`p-2 -m-2 rounded-full transition-colors ${open ? "text-ink" : idleClassName}`}
         aria-label="Share station"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -99,7 +116,9 @@ export function ShareButton({
 
       {open && (
         <div
+          ref={menuRef}
           role="menu"
+          aria-label="Share station"
           className={`absolute right-0 z-50 w-56 rounded-2xl border border-white/10 bg-[rgba(10,14,23,0.97)] backdrop-blur-2xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.8)] p-1.5 ${
             placement === "top" ? "bottom-full mb-4" : "top-full mt-4"
           }`}
@@ -108,13 +127,14 @@ export function ShareButton({
             <div key={label}>
               <button
                 role="menuitem"
+                tabIndex={-1}
                 onClick={onClick}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-ink hover:bg-white/[0.08] transition-colors text-left"
               >
                 <Icon size={18} weight="bold" className="text-ink-muted shrink-0" />
                 {label}
               </button>
-              {divider && <div className="my-1.5 mx-3 h-px bg-white/10" />}
+              {divider && <div role="separator" className="my-1.5 mx-3 h-px bg-white/10" />}
             </div>
           ))}
         </div>

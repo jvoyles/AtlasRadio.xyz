@@ -2,8 +2,7 @@
 export function LogoMark({ size = 30 }: { size?: number }) {
   return (
     <span
-      role="img"
-      aria-label="Airwave"
+      aria-hidden="true"
       className="block select-none leading-none"
       style={{ fontSize: size, width: size, height: size, lineHeight: `${size}px`, textAlign: "center" }}
     >

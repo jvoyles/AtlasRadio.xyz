@@ -96,6 +96,7 @@ function TopNavContent() {
               className={`relative z-10 h-10 px-5 flex items-center text-sm font-medium transition-colors ${
                 item.active ? "text-foreground" : "text-muted hover:text-foreground"
               }`}
+              aria-current={item.active ? "page" : undefined}
             >
               {item.label}
             </Link>
@@ -107,8 +108,9 @@ function TopNavContent() {
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className="pointer-events-auto glass-island md:hidden w-12 h-12 rounded-full flex items-center justify-center text-foreground"
-            aria-label="Toggle menu"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
           >
             {menuOpen ? <PhClose size={22} weight="bold" /> : <PhMenu size={22} weight="bold" />}
           </button>
@@ -116,13 +118,14 @@ function TopNavContent() {
       </div>
 
       {menuOpen && (
-        <div className="pointer-events-auto md:hidden mt-2 glass-island !bg-[rgba(10,14,23,0.92)] rounded-3xl p-3 flex flex-col gap-1">
+        <div id="mobile-menu" className="pointer-events-auto md:hidden mt-2 glass-island !bg-[rgba(10,14,23,0.92)] rounded-3xl p-3 flex flex-col gap-1">
           <GlobalSearch className="sm:hidden mb-2" />
           {items.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setMenuOpen(false)}
+              aria-current={item.active ? "page" : undefined}
               className={`px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${
                 item.active ? "bg-white/[0.08] text-foreground" : "text-muted hover:text-foreground hover:bg-white/[0.05]"
               }`}
