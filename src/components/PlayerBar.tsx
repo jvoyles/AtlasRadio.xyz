@@ -88,7 +88,7 @@ export function PlayerBar() {
             )}
             {live && <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-accent pulse-glow" />}
           </button>
-          <div className="min-w-0 flex-1 sm:flex-none">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={() => setExpanded(true)}
