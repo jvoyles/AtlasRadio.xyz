@@ -76,6 +76,7 @@ export function PlayerBar() {
                 src={current.favicon}
                 onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
                 alt=""
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
             ) : (
