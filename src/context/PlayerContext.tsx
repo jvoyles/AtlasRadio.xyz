@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Station } from "@/lib/radioBrowser";
+import { isPublicHttpUrl, sanitizeStations } from "@/lib/sanitize";
 
 const RECENT_KEY = "airwave:recently-played";
 const RECENT_MAX = 12;
@@ -17,7 +18,7 @@ const RECENT_MAX = 12;
 function readRecent(): Station[] {
   try {
     const raw = localStorage.getItem(RECENT_KEY);
-    return raw ? JSON.parse(raw) : [];
+    return raw ? sanitizeStations(JSON.parse(raw)) : [];
   } catch {
     return [];
   }
@@ -103,6 +104,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const play = useCallback(
     (station: Station) => {
+      if (!isPublicHttpUrl(station.url_resolved)) return;
       const audio = getAudio();
       const isSameStation = current?.stationuuid === station.stationuuid;
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 import type { Station } from "@/lib/radioBrowser";
+import { sanitizeStations } from "@/lib/sanitize";
 
 // Favorites live in this browser's localStorage — there are no accounts, so
 // nothing is stored server-side. A tiny external store keeps every heart
@@ -17,7 +18,7 @@ function read(): Station[] {
   if (cache) return cache;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    cache = raw ? (JSON.parse(raw) as Station[]) : EMPTY;
+    cache = raw ? sanitizeStations(JSON.parse(raw)) : EMPTY;
   } catch {
     cache = EMPTY;
   }

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 
@@ -23,7 +24,10 @@ export const viewport: Viewport = {
   themeColor: "#0a0e17",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// Rendering per request lets Next.js stamp the CSP nonce from src/proxy.ts on
+// its scripts and styles.
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  await connection();
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="min-h-full h-full flex flex-col bg-background text-foreground">

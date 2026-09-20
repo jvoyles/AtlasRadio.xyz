@@ -1,3 +1,5 @@
+import { isStationUuid, sanitizeStation, sanitizeStations } from "@/lib/sanitize";
+
 export type Station = {
   stationuuid: string;
   name: string;
@@ -48,30 +50,32 @@ export function searchStations(params: {
   limit?: number;
   order?: string;
 }) {
-  return apiFetch<Station[]>("/json/stations/search", {
+  return apiFetch<unknown>("/json/stations/search", {
     limit: 200,
     order: "clickcount",
     reverse: true,
     hidebroken: true,
     ...params,
-  });
+  }).then(sanitizeStations);
 }
 
 export function topStations(limit = 40) {
-  return apiFetch<Station[]>(`/json/stations/topclick/${limit}`, {
+  const n = Math.max(1, Math.min(200, Math.floor(limit) || 40));
+  return apiFetch<unknown>(`/json/stations/topclick/${n}`, {
     hidebroken: true,
-  });
+  }).then(sanitizeStations);
 }
 
 /** Look up one station by its Radio Browser uuid (used by shared links). */
 export async function stationByUuid(uuid: string) {
-  if (!/^[0-9a-f-]{36}$/i.test(uuid)) return null;
-  const [station] = await apiFetch<Station[]>(`/json/stations/byuuid/${uuid}`);
-  return station ?? null;
+  if (!isStationUuid(uuid)) return null;
+  const [station] = await apiFetch<unknown[]>(`/json/stations/byuuid/${uuid}`);
+  return sanitizeStation(station);
 }
 
 export function registerClick(stationuuid: string) {
-  return apiFetch(`/json/url/${stationuuid}`);
+  if (!isStationUuid(stationuuid)) return Promise.resolve(null);
+  return apiFetch(`/json/url/${encodeURIComponent(stationuuid)}`);
 }
 
 let geoCache: Station[] | null = null;
@@ -101,7 +105,7 @@ export async function loadAllGeoStations(onUpdate: (stations: Station[]) => void
       )
     );
     if (signal?.aborted) return;
-    for (const b of batch) for (const st of b.stations) seen.set(st.stationuuid, st);
+    for (const b of batch) for (const st of sanitizeStations(b.stations)) seen.set(st.stationuuid, st);
     onUpdate([...seen.values()]);
     done = batch.some((b) => b.done);
     page += CONCURRENCY;

@@ -28,6 +28,7 @@ A responsive web app, desktop-first with real mobile support (on touch screens a
 - Play live streams directly in the browser (the client connects straight to each station's stream URL — no server-side audio proxying or storage).
 - Like stations and revisit them on the Liked page (stored in the browser's localStorage; no accounts, no backend).
 - Shuffle to another station from recent history; history-based previous/next; auto-reconnect toggle if a stream drops; share a station from a menu (Copy Link, X, Facebook, WhatsApp) via a deep link (`/?station=<uuid>`) that cues the station and glides the globe to it.
+- Security posture: strict nonce-based CSP and hardened response headers; all station data is sanitized as untrusted input (public http(s) URLs only); no accounts, secrets or server-side user data.
 - **Hard constraint:** the project must stay zero-cost. No paid APIs, no paid hosting tiers, no paid services of any kind may be introduced.
 
 ## Brand Commitments

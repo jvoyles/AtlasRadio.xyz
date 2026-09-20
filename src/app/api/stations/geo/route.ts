@@ -1,4 +1,5 @@
 import type { Station } from "@/lib/radioBrowser";
+import { sanitizeStation } from "@/lib/sanitize";
 
 // Radio Browser returns ~1.2 KB of metadata per station and there are
 // 12k+ working ones with coordinates (~16 MB in total). This route pages
@@ -12,7 +13,7 @@ const MIRRORS = [
   "https://at1.api.radio-browser.info",
 ];
 
-type Raw = Station & { geo_lat: number | null; geo_long: number | null };
+type Raw = unknown;
 
 async function fetchPage(page: number): Promise<Raw[]> {
   const query = new URLSearchParams({
@@ -43,16 +44,12 @@ export async function GET(request: Request) {
   const page = Math.max(0, Math.min(50, Number(new URL(request.url).searchParams.get("page")) || 0));
   try {
     const raw = await fetchPage(page);
-    const stations: Station[] = raw
-      .filter((s) => typeof s.geo_lat === "number" && typeof s.geo_long === "number")
+    const stations = raw
+      .map((s) => sanitizeStation(s))
+      .filter((s): s is Station => s !== null && s.geo_lat !== null && s.geo_long !== null)
       .map((s) => ({
-        stationuuid: s.stationuuid,
-        name: s.name.trim(),
-        url_resolved: s.url_resolved,
-        favicon: s.favicon,
+        ...s,
         tags: s.tags.split(",").slice(0, 4).join(","),
-        country: s.country,
-        clickcount: s.clickcount,
         geo_lat: Math.round((s.geo_lat as number) * 1e4) / 1e4,
         geo_long: Math.round((s.geo_long as number) * 1e4) / 1e4,
       }));

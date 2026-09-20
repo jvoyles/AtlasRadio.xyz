@@ -18,3 +18,9 @@ npm run dev
 ## Notes
 
 - Deploys cleanly to Vercel's free tier. No environment variables are needed.
+
+## Security
+
+- A per-request, nonce-based Content-Security-Policy is set in `src/proxy.ts`; the other headers (HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP) are in `next.config.ts`. The CSP only allows OpenFreeMap and the Radio Browser mirrors as third-party API origins.
+- Station data comes from a public, community-edited directory and is treated as untrusted: `src/lib/sanitize.ts` validates every station (uuid shape, public `http(s)` stream and logo URLs only — no `javascript:`, loopback, LAN, link-local or cloud-metadata hosts) at the API, storage and player boundaries. Station text is only ever rendered as text.
+- There is no backend state, no accounts and no secrets. `/api/stations/geo` proxies a fixed set of upstream hosts and clamps its only parameter.
