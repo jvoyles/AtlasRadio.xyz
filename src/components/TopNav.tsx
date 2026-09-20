@@ -13,7 +13,7 @@ function Logo({ live }: { live: boolean }) {
     <span className="relative flex items-center justify-center w-9 h-9">
       {live && <span className="absolute inset-1 rounded-full bg-[#ff6a2b]/40 animate-ping" />}
       <span className="relative">
-        <LogoMark size={34} />
+        <LogoMark size={28} />
       </span>
     </span>
   );
