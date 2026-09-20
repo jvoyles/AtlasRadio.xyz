@@ -64,11 +64,11 @@ export function PlayerBar() {
     <>
       {expanded && <NowPlayingOverlay onClose={() => setExpanded(false)} />}
 
-      <footer className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 sm:inset-x-5 z-30 glass-island rounded-[2rem] sm:rounded-full px-3 sm:px-6 py-2.5 sm:py-3 grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-3 items-center gap-3 sm:gap-4">
+      <footer className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 sm:inset-x-5 z-30 glass-island rounded-2xl px-3 sm:px-5 py-2.5 sm:py-3 grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-3 items-center gap-3 sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => setExpanded(true)}
-            className="relative w-11 h-11 rounded-full overflow-hidden bg-paper-elevated shrink-0 flex items-center justify-center"
+            className="relative w-12 h-12 rounded-xl overflow-hidden bg-paper-elevated shrink-0 flex items-center justify-center"
             aria-label="Expand now playing"
           >
             {current.favicon ? (
