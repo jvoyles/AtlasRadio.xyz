@@ -55,7 +55,7 @@ export async function GET(request: Request) {
       }));
     return Response.json(
       { stations, done: raw.length < GEO_PAGE_SIZE },
-      { headers: { "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400" } }
+      { headers: { "Cache-Control": "public, max-age=900, s-maxage=21600, stale-while-revalidate=86400" } }
     );
   } catch {
     return Response.json({ stations: [], done: true }, { status: 502 });

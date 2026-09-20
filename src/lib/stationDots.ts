@@ -32,17 +32,18 @@ function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8
   canvas.height = px;
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
   const [r, g, b] = opts.color;
-  let map: MapLibreMap | null = null;
+  let lastPaint = 0;
 
   const image = {
     width: px,
     height: px,
     data: new Uint8ClampedArray(px * px * 4),
-    onAdd(m: MapLibreMap) {
-      map = m;
-    },
     render() {
-      const t = (((performance.now() / 1000) / opts.period + opts.phase) % 1 + 1) % 1;
+      const now = performance.now();
+      // ~30 fps is plenty for a slow pulse and halves the per-frame canvas readback work.
+      if (now - lastPaint < 33) return false;
+      lastPaint = now;
+      const t = (((now / 1000) / opts.period + opts.phase) % 1 + 1) % 1;
       const c = px / 2;
       const coreR = opts.core * PIXEL_RATIO;
       const maxR = c - 1;
@@ -86,7 +87,6 @@ function createPulsingDot(opts: DotOptions): StyleImageInterface & { data: Uint8
       ctx.stroke();
 
       image.data.set(ctx.getImageData(0, 0, px, px).data);
-      map?.triggerRepaint();
       return true;
     },
   };
@@ -116,6 +116,10 @@ export const ACTIVE_DOT_IMAGE = "station-dot-active";
 export const HOVER_RING_IMAGE = "station-hover-ring";
 
 export function registerStationImages(map: MapLibreMap) {
+  // Images only animate while the map re-renders, so keep it repainting at
+  // the dots' 30 fps even when nothing else (spin, drag) is moving.
+  const repaint = setInterval(() => map.triggerRepaint(), 33);
+  map.once("remove", () => clearInterval(repaint));
   for (let i = 0; i < DOT_VARIANTS; i++) {
     map.addImage(
       dotImageId(i),

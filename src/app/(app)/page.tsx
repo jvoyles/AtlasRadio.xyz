@@ -11,8 +11,15 @@ import {
   type Station,
 } from "@/lib/radioBrowser";
 import { SignalRow } from "@/components/SignalRow";
-import { Globe } from "@/components/Globe";
+import dynamic from "next/dynamic";
 import { usePlayer } from "@/context/PlayerContext";
+
+// The map library is ~800 KB, so it only loads when the globe is actually
+// shown — the Trending, Liked and search views never download it.
+const Globe = dynamic(() => import("@/components/Globe").then((m) => m.Globe), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, #0C1B33 0%, #081222 100%)" }} />,
+});
 
 export default function BrowsePage() {
   return (

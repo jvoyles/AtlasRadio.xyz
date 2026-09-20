@@ -92,23 +92,48 @@ export async function loadAllGeoStations(onUpdate: (stations: Station[]) => void
     onUpdate(geoCache);
     return;
   }
-  const CONCURRENCY = 3;
+  // The upstream is latency-bound (~2 s per page regardless of size), so pages
+  // are fetched by a small pool of workers, and the map is refreshed at most
+  // every 400 ms so re-clustering 12k points doesn't run once per page.
+  const CONCURRENCY = 4;
   const seen = new Map<string, Station>();
-  let page = 0;
-  let done = false;
-  while (!done && !signal?.aborted) {
-    const batch = await Promise.all(
-      Array.from({ length: CONCURRENCY }, (_, i) =>
-        fetch(`/api/stations/geo?page=${page + i}`, { signal })
-          .then((r) => (r.ok ? (r.json() as Promise<{ stations: Station[]; done: boolean }>) : { stations: [], done: true }))
-          .catch(() => ({ stations: [] as Station[], done: true }))
-      )
-    );
-    if (signal?.aborted) return;
-    for (const b of batch) for (const st of sanitizeStations(b.stations)) seen.set(st.stationuuid, st);
+  let nextPage = 0;
+  let finished = false;
+  let dirty = false;
+  let lastEmit = 0;
+  let pending: ReturnType<typeof setTimeout> | null = null;
+
+  const emit = () => {
+    pending = null;
+    lastEmit = Date.now();
+    dirty = false;
     onUpdate([...seen.values()]);
-    done = batch.some((b) => b.done);
-    page += CONCURRENCY;
+  };
+  const scheduleEmit = () => {
+    dirty = true;
+    if (pending) return;
+    pending = setTimeout(emit, Math.max(0, 400 - (Date.now() - lastEmit)));
+  };
+
+  const worker = async () => {
+    while (!finished && !signal?.aborted) {
+      const page = nextPage++;
+      const body = await fetch(`/api/stations/geo?page=${page}`, { signal })
+        .then((r) => (r.ok ? (r.json() as Promise<{ stations: Station[]; done: boolean }>) : { stations: [], done: true }))
+        .catch(() => ({ stations: [] as Station[], done: true }));
+      if (signal?.aborted) return;
+      for (const st of sanitizeStations(body.stations)) seen.set(st.stationuuid, st);
+      if (body.done) finished = true;
+      scheduleEmit();
+    }
+  };
+
+  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+  if (signal?.aborted) {
+    if (pending) clearTimeout(pending);
+    return;
   }
-  if (!signal?.aborted && seen.size > 0) geoCache = [...seen.values()];
+  if (pending) clearTimeout(pending);
+  if (dirty || seen.size > 0) emit();
+  if (seen.size > 0) geoCache = [...seen.values()];
 }

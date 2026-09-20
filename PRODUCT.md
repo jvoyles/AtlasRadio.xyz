@@ -29,6 +29,7 @@ A responsive web app, desktop-first with real mobile support (on touch screens a
 - Like stations and revisit them on the Liked page (stored in the browser's localStorage; no accounts, no backend).
 - Shuffle to another station from recent history; history-based previous/next; auto-reconnect toggle if a stream drops; share a station from a menu (Copy Link, X, Facebook, WhatsApp) via a deep link (`/?station=<uuid>`) that cues the station and glides the globe to it.
 - Security posture: strict nonce-based CSP and hardened response headers; all station data is sanitized as untrusted input (public http(s) URLs only); no accounts, secrets or server-side user data.
+- Performance posture: the map library (~800 KB) is lazy-loaded only for the globe view (Trending/Liked/search ship ~65% less JS), the now-playing view is lazy-loaded, station pages stream in through a pooled, throttled loader, dot animation runs at 30 fps, list logos are lazy/async-decoded, and API/worker files carry cache headers.
 - **Hard constraint:** the project must stay zero-cost. No paid APIs, no paid hosting tiers, no paid services of any kind may be introduced.
 
 ## Brand Commitments

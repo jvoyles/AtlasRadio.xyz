@@ -75,6 +75,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
           <img
             src={current.favicon}
             alt=""
+ referrerPolicy="no-referrer"
             className="w-full h-full object-cover scale-125 blur-3xl opacity-40"
           />
         )}
@@ -106,6 +107,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                 <img
                   src={current.favicon}
                   alt=""
+ referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                   onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
                 />
@@ -208,6 +210,7 @@ export function NowPlayingOverlay({ onClose }: { onClose: () => void }) {
                         <img
                           src={station.favicon}
                           alt=""
+ referrerPolicy="no-referrer"
                           className="w-full h-full object-cover"
                           onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
                         />

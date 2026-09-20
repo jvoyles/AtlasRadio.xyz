@@ -60,6 +60,11 @@ export function SignalRow({ index, station }: { index?: number; station: Station
           <img
             src={station.favicon}
             alt=""
+ referrerPolicy="no-referrer"
+            loading="lazy"
+            decoding="async"
+            width={40}
+            height={40}
             className="w-full h-full object-cover"
             onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
           />

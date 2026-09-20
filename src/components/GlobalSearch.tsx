@@ -236,6 +236,9 @@ function GlobalSearchContent({ className }: { className: string }) {
                         <img
                           src={station.favicon}
                           alt=""
+ referrerPolicy="no-referrer"
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                           onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
                         />

@@ -3,10 +3,12 @@
 import { useState, type CSSProperties } from "react";
 import { usePlayer } from "@/context/PlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
-import { NowPlayingOverlay } from "./NowPlayingOverlay";
+import dynamic from "next/dynamic";
 import { ShareButton } from "./ShareButton";
 import { formatElapsed } from "@/lib/format";
 import { ArrowsOutSimpleIcon as PhExpand, HeartIcon as PhHeart, MusicNotesIcon as PhNote, PauseIcon as PhPause, PlayIcon as PhPlay, RepeatIcon as PhRepeat, ShuffleIcon as PhShuffle, SkipBackIcon as PhBack, SkipForwardIcon as PhForward, SpeakerHighIcon as PhVolumeHigh, SpeakerLowIcon as PhVolumeLow, SpeakerXIcon as PhVolumeOff } from "@phosphor-icons/react";
+
+const NowPlayingOverlay = dynamic(() => import("./NowPlayingOverlay").then((m) => m.NowPlayingOverlay), { ssr: false });
 
 const PlayIcon = () => <PhPlay size={18} weight="fill" />;
 const PauseIcon = () => <PhPause size={18} weight="fill" />;

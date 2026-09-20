@@ -15,8 +15,19 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    optimizePackageImports: ["@phosphor-icons/react"],
+  },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Map worker files are copied into public/ by postinstall (unhashed names),
+      // so cache them for a day and revalidate in the background.
+      {
+        source: "/maplibre-gl-:file.mjs",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+      },
+    ];
   },
 };
 
