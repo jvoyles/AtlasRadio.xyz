@@ -2,13 +2,7 @@
 
 **Live: [atlasradio.xyz](https://www.atlasradio.xyz)**
 
-Spin a real 3D globe, drop in on any of 12,000+ live internet radio stations, and start listening. Free, no ads, no account.
-
-<p align="center">
-  <img src=".github/preview.gif" alt="Atlas Radio: a rotating globe of live radio stations. Zooming in splits a cluster into individual stations, hovering one opens a preview, and clicking tunes in." width="720" />
-</p>
-
-A Spotify-style web app for browsing and streaming free internet radio stations from around the world.
+A Spotify-style web app for browsing live internet radio: spin a 3D globe, pick any of 12,000+ stations, and start listening — free, no ads, no account.
 
 ## Stack
 
@@ -26,7 +20,6 @@ npm run dev
 ## Notes
 
 - Deploys cleanly to Vercel's free tier. No environment variables are needed.
-- The hero GIF above is a real capture of the live globe (comet, cluster splitting into dots, hover tooltip, tuning in), composited over an animated mesh gradient (`@paper-design/shaders`) — not a screenshot. It isn't part of the deployed app; only the finished `.github/preview.gif` is kept in the repo.
 
 ## Security
 
