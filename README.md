@@ -2,7 +2,7 @@
 
 **Live: [atlasradio.xyz](https://www.atlasradio.xyz)**
 
-A Spotify-style web app for browsing live internet radio: spin a 3D globe, pick any of 12,000+ stations, and start listening — free, no ads, no account.
+A web app for browsing live internet radio: spin a 3D globe, pick any of 12,000+ stations, and start listening — free, no ads, no account.
 
 ## Stack
 
