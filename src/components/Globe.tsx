@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { AttributionControl, Map as MapLibreMap, Popup, config as maplibreConfig, type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { AUTHOR_NAME, AUTHOR_URL } from "@/lib/site";
 import type { Station } from "@/lib/radioBrowser";
 import {
   ACTIVE_DOT_IMAGE,
@@ -155,7 +156,13 @@ export function Globe({
     });
     mapRef.current = map;
     // Top-right: the player dock covers the bottom edge whenever a station is playing.
-    map.addControl(new AttributionControl({ compact: true }), "top-right");
+    map.addControl(
+      new AttributionControl({
+        compact: true,
+        customAttribution: `Created by <a href="${AUTHOR_URL}" target="_blank" rel="noopener noreferrer">${AUTHOR_NAME}</a>`,
+      }),
+      "top-right"
+    );
 
     map.dragRotate.enable();
     map.touchZoomRotate.enableRotation();

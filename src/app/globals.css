@@ -333,6 +333,20 @@ body {
     margin-right: 20px;
   }
 }
+/* On phones the expanded credit is too long for one line: wrap it inside a rounded card. */
+@media (max-width: 639px) {
+  .maplibregl-ctrl-top-right .maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-compact-show {
+    height: auto;
+    min-height: 40px;
+    max-width: calc(100vw - 24px);
+    border-radius: 20px;
+    padding: 10px 16px 10px 46px;
+  }
+  .maplibregl-ctrl-top-right .maplibregl-ctrl-attrib-inner {
+    white-space: normal;
+    line-height: 19px;
+  }
+}
 
 
 /* "Now playing" level meter: bars scale up from the baseline at different tempos. */

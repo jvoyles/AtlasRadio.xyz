@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
+import { AUTHOR_NAME, AUTHOR_URL, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 
@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   title: { default: `${SITE_NAME} — ${SITE_TAGLINE}`, template: `%s — ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  authors: [{ name: AUTHOR_NAME, url: AUTHOR_URL }],
+  creator: AUTHOR_NAME,
   keywords: ["internet radio", "live radio", "radio stations", "world radio", "radio globe", "online radio", "free radio"],
   category: "music",
   alternates: { canonical: "/" },
@@ -49,6 +51,7 @@ const structuredData = {
       name: SITE_NAME,
       description: SITE_DESCRIPTION,
       inLanguage: "en",
+      author: { "@type": "Person", name: AUTHOR_NAME, url: AUTHOR_URL },
       potentialAction: {
         "@type": "SearchAction",
         target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/?q={search_term_string}` },
@@ -62,6 +65,7 @@ const structuredData = {
       url: SITE_URL,
       description: SITE_DESCRIPTION,
       applicationCategory: "MultimediaApplication",
+      author: { "@type": "Person", name: AUTHOR_NAME, url: AUTHOR_URL },
       operatingSystem: "Any",
       browserRequirements: "Requires a modern browser with JavaScript",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
